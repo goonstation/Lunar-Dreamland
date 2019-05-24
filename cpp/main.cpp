@@ -31,9 +31,9 @@ luaL_Reg lj_plhdetour[] = {
 		if (detour->hook()) {
 			lua_pushinteger(L, (lua_Integer)trampoline);
 		}
-	else
-	   lua_pushboolean(L, 0);
-	return 1;
+		else
+		   lua_pushboolean(L, 0);
+		return 1;
 	}},
 	{"unhook", [](lua_State * L) {
 		auto detour = (PLH::x86Detour*) luaL_checkudata(L, 1, "PLH::x86Detour");
