@@ -286,13 +286,13 @@ function M.getProc(path)
 	return typecache.procs[path]
 end
 
-procCallHook = M.hook(CallGlobalProc, function(original, usrType, usrVal, c, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
+procCallHook = M.hook(CallGlobalProc, function(original, usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 	local theProc = GetProcArrayEntry(procid)
 	--if byond.toLuaString(theProc.procPath) == '/proc/conoutput' and argc == 1 then
 	--	print('dbg: ' ..byond.toLuaString(argv[0].value))
 	--	return byond.null.longlongman
 	--end
-	
+	if argc == 1 then print(argv[0].type) end
 	if prochooks[tonumber(procid)] then
 		local luad = {}
 		for i = 1, tonumber(argc) do
@@ -303,11 +303,10 @@ procCallHook = M.hook(CallGlobalProc, function(original, usrType, usrVal, c, pro
 			for k, v in pairs{...} do
 				honk[k] = lua2value(v)
 			end
-			return value2lua(original(usrType, usrVal, c, procid, d, srcType, srcVal, ffi.new('Value[' .. #honk .. ']', honk), #honk, 0, 0))
+			return value2lua(original(usrType, usrVal, flags, procid, d, srcType, srcVal, ffi.new('Value[' .. #honk .. ']', honk), #honk, 0, 0))
 		end, value2lua(ffi.new('Value', {type=usrType, value=usrVal})), value2lua(ffi.new('Value', {type=srcType, value=srcVal})), unpack(luad))).longlongman
 	else
-		local ret = original(usrType, usrVal, c, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
-		print( usrType, usrVal, c, byond.toLuaString(theProc.procPath), d, srcType, srcVal, argv, argc, callback, callbackVar, '|', ret.type, ret.value)
+		local ret = original(usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 		return ret.longlongman
 	end
 end, 'long long(*)(char usrType, int usrVal, int const_2, unsigned int proc_id, int const_0, char srcType, int srcVal, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3)', M.null.longlongman)
