@@ -175,7 +175,9 @@ local function lua2value(value, refcount)
 		end
 	else print('??? type: ' .. a) end
 end
-
+M.world = setmetatable({handle={type = World, value = 0x0}}, datumM)
+M.global = setmetatable({handle={type = World, value = 0x1}}, datumM)
+M.lua2value = lua2value
 function datumM:__index(key)
 	return rawget(datumM, key) or value2lua(GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1) ))
 end
