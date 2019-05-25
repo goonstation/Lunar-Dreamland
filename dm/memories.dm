@@ -10,9 +10,13 @@
 /client/var/cats
 /proc/conoutput(var/msg)
 	//dud
-/proc/hookme()
+/proc/hookme(var/mob/thing)
 	return 1000
 /client/verb/globalProc()
-	world << hookme()
+	world << "You are: [usr.name]"
+	hookme(usr)
+	world << "However, now you are [usr.name]"
 /proc/WorldOutput(var/text)
 	world << text
+/client/proc/wtf()
+	world << "WTF"

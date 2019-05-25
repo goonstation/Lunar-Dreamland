@@ -34,8 +34,8 @@ typedef struct ProcArrayEntry {
 } ProcArrayEntry;
 typedef Value(*CallGlobalProc)(int unk1, int unk2, int proc_type, unsigned int proc_id, int const_0, int unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3);
 typedef Value(*Text2PathPtr)(unsigned int text);
-typedef unsigned int(*GetStringTableIndex)(const char* string, int unk1, int unk2);
-typedef void(*SetVariablePtr)(unsigned char type, unsigned int datumId, unsigned int varNameId, unsigned char varType, void* newValue);
+typedef unsigned int(*GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+typedef void(*SetVariablePtr)(unsigned char type, unsigned int datumId, unsigned int varNameId, unsigned char varType, int newValue);
 typedef Value(*ReadVariablePtr)(unsigned char type, unsigned int datumId, unsigned int varNameId);
 typedef Value(*CallProcPtr)(int unk1, int unk2, unsigned int proc_type, unsigned int proc_name, unsigned char datumType, unsigned int datumId, Value* argList, unsigned int argListLen, int unk4, int unk5);
 typedef IDArrayEntry*(*GetIDArrayEntryPtr)(unsigned int index);
@@ -91,32 +91,62 @@ local function str2val(str)
 	local idx = GetStringTableIndex(str, 0, 1)
 	return ffi.new('Value', {type = String, value = idx})
 end
-local function value2lua(value)
-	if value.type == String then
+
+local datumM = {}-- datumM.__index = datumM
+
+local function value2lua(value, refcount)
+	local t = value.type
+	if t == String then
 		return ffi.string( GetStringTableIndexPtr(value.value).stringData )
-	elseif value.type == Number then
+	elseif t == Number then
 		return tonumber(value.valuef)
-	elseif value.type == Null then
+	elseif t == Null then
 		return nil
+	elseif t == Datum or t == Turf or t == World or t == Obj or t == Image or t == Client or t == Area or t == Mob then
+		return setmetatable( {handle = value, call = datumM.call}, datumM )
 	else
 		print('??? value2lua type: ' .. value.type )
 	end
 end
-local function lua2value(value)
+--use refcount if we're assigning or invoking
+local function lua2value(value, refcount)
 	local t = type(value)
 	if t == 'string' then
-		return ffi.new('Value', {type=String, value=GetStringTableIndex(value, 0, 1)})
+		if refcount then
+			local ret = ffi.new('Value', {type=String, value=GetStringTableIndex(value, 0, 1)})
+			--local entry = 
+			return ffi.new('Value', {type=String, value=GetStringTableIndex(value, 0, 1)})--nyi
+		else
+			return ffi.new('Value', {type=String, value=GetStringTableIndex(value, 0, 1)})
+		end
 	elseif t == 'number' then
 		return ffi.new('Value', {type=Number, valuef=value})
 	elseif t == 'nil' then
 		return M.null
+	elseif t == 'table' then
+		if getmetatable(value) == datumM then
+			return value.handle
+		end
 	else print('??? type: ' .. a) end
 end
+
+function datumM:__index(key)
+	if key == 'call' then return datumM.call end
+	return value2lua(GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1) ))
+end
+
+function datumM:__newindex(key, val)
+	local converted = lua2value(val, true) or M.null
+	
+	SetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1), converted.type, converted.value )
+end
+
 function M.toLuaString(index)
 	local entry = GetStringTableIndexPtr(index)
 	if not entry then return end
 	return ffi.string( entry.stringData )
 end
+
 local procMeta = {} procMeta.__index = procMeta
 function procMeta:__tostring()
 	return '[BYOND Proc #'..self.id..']: ' .. self.path
@@ -152,6 +182,7 @@ for i = 0, 0xFFFFFF do
 		typecache.procs[ built.path ] = built
 	else break end
 end
+
 local hooks = {}
 function M.hook(fn, callback, cbType, errRet)
 	if hooks[fn] then
@@ -183,6 +214,7 @@ end
 function M.getProc(path)
 	return typecache.procs[path]
 end
+
 procCallHook = M.hook(CallGlobalProc, function(original, usrType, usrVal, c, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 	local theProc = GetProcArrayEntry(procid)
 	--if byond.toLuaString(theProc.procPath) == '/proc/conoutput' and argc == 1 then
