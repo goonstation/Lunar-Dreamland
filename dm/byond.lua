@@ -32,7 +32,7 @@ typedef struct ProcArrayEntry {
 	int bytecode;//idarray index
 	char unknown[12];
 } ProcArrayEntry;
-typedef Value(*CallGlobalProc)(int unk1, int unk2, int proc_type, unsigned int proc_id, int const_0, int unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3);
+typedef Value(*CallGlobalProc)(char unk1, int unk2, int proc_type, unsigned int proc_id, int const_0, char unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3);
 typedef Value(*Text2PathPtr)(unsigned int text);
 typedef unsigned int(*GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
 typedef void(*SetVariablePtr)(unsigned char type, unsigned int datumId, unsigned int varNameId, unsigned char varType, int newValue);
@@ -42,7 +42,7 @@ typedef IDArrayEntry*(*GetIDArrayEntryPtr)(unsigned int index);
 typedef int(*ThrowDMErrorPtr)(const char* msg);
 typedef ProcArrayEntry*(*GetProcArrayEntryPtr)(unsigned int index);]]
 local M = {}
-
+local getmetatable = getmetatable
 Null		= 0x00
 Turf		= 0x01
 Obj			= 0x02
@@ -67,6 +67,46 @@ List		= 0x0F
 Datum		= 0x21
 Path		= 0x26
 Number 		= 0x2A--todo not globalize these nerds
+local types = {
+	[0x00] = "Null"        ,
+	[0x01] = "Turf"        ,
+	[0x02] = "Obj"         ,
+	[0x03] = "Mob"         ,
+	[0x04] = "Area"        ,
+	[0x05] = "Client"      ,
+	[0x0D] = "Image"       ,
+	[0x0E] = "World"       ,
+	[0x0E] = "Global"      ,
+	[0x21] = "Datum"       ,
+	[0x23] = "Savefile"    ,
+	[0x26] = "Path"        ,
+	[0x54] = "List"        ,
+	[0x06] = "String"      ,
+	[0x0E] = "World"       ,
+	[0x0F] = "List"        ,
+	[0x21] = "Datum"       ,
+	[0x26] = "Path"        ,
+	[0x2A] = "Number"      ,
+	["Null"] = 0x00        ,
+	["Turf"] = 0x01        ,
+	["Obj"] = 0x02         ,
+	["Mob"] = 0x03         ,
+	["Area"] = 0x04        ,
+	["Client"] = 0x05      ,
+	["Image"] = 0x0D       ,
+	["World"] = 0x0E       ,
+	["Global"] = 0x0E      ,
+	["Datum"] = 0x21       ,
+	["Savefile"] = 0x23    ,
+	["Path"] = 0x26        ,
+	["List"] = 0x54        ,
+	["String"] = 0x06      ,
+	["World"] = 0x0E       ,
+	["List"] = 0x0F        ,
+	["Datum"] = 0x21       ,
+	["Path"] = 0x26        ,
+	["Number"] = 0x2A
+}
 M.null = ffi.new('Value', {type = Null, value = 0})
 
 GetStringTableIndexPtr = ffi.cast('String*(__cdecl*)(int stringId)', hook.sigscan("byondcore.dll", "55 8B EC 8B 4D 08 3B 0D ?? ?? ?? ?? 73 10 A1"))
@@ -92,9 +132,15 @@ local function str2val(str)
 	return ffi.new('Value', {type = String, value = idx})
 end
 
-local datumM = {}-- datumM.__index = datumM
-
-local function value2lua(value, refcount)
+local datumM = {}--setmetatable(datumM, {__index=datumM})-- datumM.__index = datumM
+ffi.metatype( 'Value', {
+	__eq = function(a, b)
+		if(ffi.istype('Value', b)) then return a.type == b.type and a.value == b.value
+		elseif( type(b) == 'table' and getmetatable(b) == datumM ) then return a == b.handle end
+		return false
+	end
+})
+local function value2lua(value)
 	local t = value.type
 	if t == String then
 		return ffi.string( GetStringTableIndexPtr(value.value).stringData )
@@ -131,8 +177,7 @@ local function lua2value(value, refcount)
 end
 
 function datumM:__index(key)
-	if key == 'call' then return datumM.call end
-	return value2lua(GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1) ))
+	return rawget(datumM, key) or value2lua(GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1) ))
 end
 
 function datumM:__newindex(key, val)
@@ -140,7 +185,34 @@ function datumM:__newindex(key, val)
 	
 	SetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1), converted.type, converted.value )
 end
+local procCallHook
 
+function datumM:invoke( procName, ... )
+	local proc = M.getProc( procName )
+	if not proc then error('no such proc ' .. procName) end
+	local args = {...}
+	local argv = {}
+	for i = 1, #args do
+		local v = lua2value(args[i])
+		if v then table.insert(argv, v) end
+	end
+	local vals = ffi.new('Value[' .. #argv .. ']', argv)
+	return value2lua(procCallHook.trampoline( 0, 0, 2, proc.id, 0, self.handle.type, self.handle.value, vals, #argv, 0, 0 --[[no callback]] ))
+end
+
+function datumM:__eq(b) if not b then return self == M.null end
+	if ffi.istype('Value', b) then
+		return self.handle == b
+	else
+		return self.handle == b or self.handle == b.handle
+	end
+end
+function datumM:__tostring()
+	return ("BYOND %s [0x%x%06x]"):format(types[tonumber(self.handle.type)], self.handle.type, self.handle.value)
+end
+function datumM:ref()
+	return ("[0x%x%06x]"):format(self.handle.type, self.handle.value)
+end
 function M.toLuaString(index)
 	local entry = GetStringTableIndexPtr(index)
 	if not entry then return end
@@ -155,7 +227,6 @@ local prochooks = {}
 function procMeta:hook(callback)
 	prochooks[self.id] = callback
 end
-local procCallHook
 function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
@@ -233,14 +304,13 @@ procCallHook = M.hook(CallGlobalProc, function(original, usrType, usrVal, c, pro
 				honk[k] = lua2value(v)
 			end
 			return value2lua(original(usrType, usrVal, c, procid, d, srcType, srcVal, ffi.new('Value[' .. #honk .. ']', honk), #honk, 0, 0))
-		end, unpack(luad))).longlongman
+		end, value2lua(ffi.new('Value', {type=usrType, value=usrVal})), value2lua(ffi.new('Value', {type=srcType, value=srcVal})), unpack(luad))).longlongman
 	else
-
 		local ret = original(usrType, usrVal, c, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 		print( usrType, usrVal, c, byond.toLuaString(theProc.procPath), d, srcType, srcVal, argv, argc, callback, callbackVar, '|', ret.type, ret.value)
 		return ret.longlongman
 	end
-end, 'long long(*)(int unk1, int unk2, int const_2, unsigned int proc_id, int const_0, int unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3)', M.null.longlongman)
+end, 'long long(*)(char usrType, int usrVal, int const_2, unsigned int proc_id, int const_0, char srcType, int srcVal, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3)', M.null.longlongman)
 
 local errhk = M.hook(ThrowDMError, function(orig, msg)
 	print('DM error: ' .. ffi.string(msg))

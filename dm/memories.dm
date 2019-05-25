@@ -10,13 +10,17 @@
 /client/var/cats
 /proc/conoutput(var/msg)
 	//dud
-/proc/hookme(var/mob/thing)
+/client/proc/myName()
+	return src.key
+/client/proc/hookme(var/mob/thing)
 	return 1000
 /client/verb/globalProc()
-	world << "You are: [usr.name]"
+	world << "You are: [usr.name] (\ref[usr])"
 	hookme(usr)
-	world << "However, now you are [usr.name]"
+	world << "However, now you are [usr.name] (\ref[src])"
 /proc/WorldOutput(var/text)
 	world << text
 /client/proc/wtf()
 	world << "WTF"
+/client/verb/lokayt(var/t as text)
+	world << locate(t)
