@@ -95,7 +95,7 @@ local function value2lua(value)
 	if value.type == String then
 		return ffi.string( GetStringTableIndexPtr(value.value).stringData )
 	elseif value.type == Number then
-		return tonumber(value.fvalue)
+		return tonumber(value.valuef)
 	elseif value.type == Null then
 		return nil
 	else
@@ -107,7 +107,7 @@ local function lua2value(value)
 	if t == 'string' then
 		return ffi.new('Value', {type=String, value=GetStringTableIndex(value, 0, 1)})
 	elseif t == 'number' then
-		return ffi.new('Value', {type=Number, value=GetStringTableIndex(value, 0, 1)})
+		return ffi.new('Value', {type=Number, valuef=value})
 	elseif t == 'nil' then
 		return M.null
 	else print('??? type: ' .. a) end

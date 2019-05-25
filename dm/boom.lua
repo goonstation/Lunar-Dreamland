@@ -7,3 +7,6 @@ print'hooking'
 byond.getProc('/proc/conoutput'):hook(function(original, msg)
 	print("Debug: " .. msg)
 end)
+byond.getProc('/proc/hookme'):hook(function(original)
+	return original() + 234
+end)

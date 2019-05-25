@@ -10,13 +10,9 @@
 /client/var/cats
 /proc/conoutput(var/msg)
 	//dud
+/proc/hookme()
+	return 1000
 /client/verb/globalProc()
-	var/test = 0
-	conoutput("setting local var")
-	test = 123
-	test:cats = 123
-	conoutput("setting client var")
-	cats = test
-	world << test
+	world << hookme()
 /proc/WorldOutput(var/text)
 	world << text
