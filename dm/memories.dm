@@ -1,4 +1,5 @@
-
+/client
+	var/list/listvar = list(1, "test")
 /client/verb/initDLL()
 	world << call("hookerino.dll","BHOOK_Init")()
 /client/verb/runLua(var/code as message)
@@ -24,4 +25,20 @@
 	world << "WTF"
 /client/verb/lokayt(var/t as text)
 	world << locate(t)
+/client/proc/list_stuff()
+	//hook
+/client/verb/do_list_stuff()
+	list_stuff()
+/client/verb/print_list()
+	for(var/e in listvar)
+		world << e
 var/global/cats=1
+var/init_res = ""
+/world/New()
+	..()
+	init_res += call("hookerino.dll","BHOOK_Init")()
+	init_res += call("hookerino.dll", "BHOOK_RunLua")("dofile'boom.lua'")
+
+/client/New()
+	..()
+	src << init_res

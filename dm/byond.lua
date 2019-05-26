@@ -6,6 +6,7 @@ typedef struct String
 	int unk2;
 	unsigned int refcount;
 } String;
+
 typedef struct Value {
 	union {
 		struct {
@@ -18,11 +19,13 @@ typedef struct Value {
 		long long longlongman;
 	};
 } Value;
+
 typedef struct IDArrayEntry {
 	short size;
 	int unknown;
 	int refcountMaybe;
 } IDArrayEntry;
+
 typedef struct ProcArrayEntry {
 	int procPath;//all these are string table IDs
 	int procName;
@@ -32,6 +35,18 @@ typedef struct ProcArrayEntry {
 	int bytecode;//idarray index
 	char unknown[12];
 } ProcArrayEntry;
+
+typedef struct List {
+	Value* elements;
+	int unk1;
+	int unk2;
+	int length;
+	int refcount;
+	int unk3;
+	int unk4;
+	int unk5;
+} List;
+
 typedef Value(*CallGlobalProc)(char unk1, int unk2, int proc_type, unsigned int proc_id, int const_0, char unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3);
 typedef Value(*Text2PathPtr)(unsigned int text);
 typedef unsigned int(*GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
@@ -40,7 +55,12 @@ typedef Value(*ReadVariablePtr)(unsigned char type, unsigned int datumId, unsign
 typedef Value(*CallProcPtr)(int unk1, int unk2, unsigned int proc_type, unsigned int proc_name, unsigned char datumType, unsigned int datumId, Value* argList, unsigned int argListLen, int unk4, int unk5);
 typedef IDArrayEntry*(*GetIDArrayEntryPtr)(unsigned int index);
 typedef int(*ThrowDMErrorPtr)(const char* msg);
-typedef ProcArrayEntry*(*GetProcArrayEntryPtr)(unsigned int index);]]
+typedef ProcArrayEntry*(*GetProcArrayEntryPtr)(unsigned int index);
+typedef List*(*GetListArrayEntryPtr)(unsigned int index);
+typedef void(*AppendToContainerPtr)(unsigned char containerType, int containerValue, unsigned char valueType, int newValue);
+typedef void(*RemoveFromContainerPtr)(unsigned char containerType, int containerValue, unsigned char valueType, int newValue);
+]]
+
 local M = {}
 local getmetatable = getmetatable
 Null		= 0x00
@@ -55,7 +75,6 @@ Global		= 0x0E
 Datum		= 0x21
 Savefile	= 0x23
 Path		= 0x26
-List		= 0x54
 Null		= 0x00
 Turf		= 0x01
 Obj			= 0x02
@@ -67,6 +86,7 @@ List		= 0x0F
 Datum		= 0x21
 Path		= 0x26
 Number 		= 0x2A--todo not globalize these nerds
+
 local types = {
 	[0x00] = "Null"        ,
 	[0x01] = "Turf"        ,
@@ -80,7 +100,6 @@ local types = {
 	[0x21] = "Datum"       ,
 	[0x23] = "Savefile"    ,
 	[0x26] = "Path"        ,
-	[0x54] = "List"        ,
 	[0x06] = "String"      ,
 	[0x0E] = "World"       ,
 	[0x0F] = "List"        ,
@@ -99,7 +118,6 @@ local types = {
 	["Datum"] = 0x21       ,
 	["Savefile"] = 0x23    ,
 	["Path"] = 0x26        ,
-	["List"] = 0x54        ,
 	["String"] = 0x06      ,
 	["World"] = 0x0E       ,
 	["List"] = 0x0F        ,
@@ -118,6 +136,9 @@ GetVariable = ffi.cast('ReadVariablePtr', hook.sigscan("byondcore.dll", "55 8B E
 CallProc = ffi.cast('CallProcPtr', hook.sigscan("byondcore.dll", "55 8B EC 83 EC 0C 53 8B 5D 10 8D 45 FF 56 8B 75 14 57 6A 01 50 FF 75 1C C6 45 FF 00 FF 75 18 6A 00 56 53"))
 GetProcArrayEntry = ffi.cast('GetProcArrayEntryPtr', hook.sigscan("byondcore.dll", "55 8B EC 8B 45 08 3B 05 ? ? ? ? 72 04 33 C0 5D C3 8D 0C C0 A1 ? ? ? ? 8D 04 88 5D C3"))
 ThrowDMError = ffi.cast('ThrowDMErrorPtr', hook.sigscan("byondcore.dll", "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 83 EC 40 53 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 ?? ?? ?? ?? 89 65 F0 A1 ?? ?? ?? ?? 32 DB 85 C0 74 29 80 78 6B 02 0F 83 ?? ?? ?? ??"))
+GetListArrayEntry = ffi.cast('GetListArrayEntryPtr', hook.sigscan("byondcore.dll", "55 8B EC 8B 4D 08 3B 0D ?? ?? ?? ?? 73 11 A1 ?? ?? ?? ?? 8B 04 88 85 C0 74 05 FF 40 10 5D C3 6A 0F 51 E8 ?? ?? ?? ?? 68 ?? ?? ?? ?? 52 50 E8 ?? ?? ?? ?? 83 C4 14 5D C3"))
+AppendToContainer = ffi.cast('AppendToContainerPtr', hook.sigscan("byondcore.dll", "55 8B EC 8B 45 08 3B 05 ? ? ? ? 72 04 33 C0 5D C3 8D 0C C0 A1 ? ? ? ? 8D 04 88 5D C3"))
+RemoveFromContainer = ffi.cast('RemoveFromContainerPtr', hook.sigscan("byondcore.dll", "55 8B EC 8B 45 08 3B 05 ? ? ? ? 72 04 33 C0 5D C3 8D 0C C0 A1 ? ? ? ? 8D 04 88 5D C3"))
 --local yolo = hook.sigscan("byondcore.dll", "?? ?? ?? ?? 8B F0 83 C4 04 85 F6 74 5F 0F B7 1E C1 E3 02 53 ")
 
 --local idarr = ffi.cast('uint32_t*', yolo)
@@ -133,6 +154,7 @@ local function str2val(str)
 end
 
 local datumM = {}--setmetatable(datumM, {__index=datumM})-- datumM.__index = datumM
+local listM = {}
 ffi.metatype( 'Value', {
 	__eq = function(a, b)
 		if(ffi.istype('Value', b)) then return a.type == b.type and a.value == b.value
@@ -140,6 +162,7 @@ ffi.metatype( 'Value', {
 		return false
 	end
 })
+
 local function value2lua(value)
 	local t = value.type
 	if t == String then
@@ -148,6 +171,12 @@ local function value2lua(value)
 		return tonumber(value.valuef)
 	elseif t == Null then
 		return nil
+	elseif t == List then
+		list_wrapper = {
+			internal_list = GetListArrayEntry(value.value),
+			id = value.value
+		}
+		return setmetatable(list_wrapper, listM)
 	elseif t == Datum or t == Turf or t == World or t == Obj or t == Image or t == Client or t == Area or t == Mob then
 		return setmetatable( {handle = value, call = datumM.call}, datumM )
 	else
@@ -175,11 +204,19 @@ local function lua2value(value, refcount)
 		end
 	else print('??? type: ' .. a) end
 end
+
 M.world = setmetatable({handle={type = World, value = 0x0}}, datumM)
 M.global = setmetatable({handle={type = World, value = 0x1}}, datumM)
 M.lua2value = lua2value
+
 function datumM:__index(key)
-	return rawget(datumM, key) or value2lua(GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1) ))
+	var = GetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1))
+	t = type(var)
+	if t == 'table' then
+		return rawget(datumM, key) or value2lua(var)
+	elseif t == 'cdata' then
+		return value2lua({type=var.type, value=var.value})
+	end
 end
 
 function datumM:__newindex(key, val)
@@ -187,6 +224,7 @@ function datumM:__newindex(key, val)
 	
 	SetVariable( self.handle.type, self.handle.value, GetStringTableIndex( key, 0, 1), converted.type, converted.value )
 end
+
 local procCallHook
 
 function datumM:invoke( procName, ... )
@@ -209,12 +247,43 @@ function datumM:__eq(b) if not b then return self == M.null end
 		return self.handle == b or self.handle == b.handle
 	end
 end
+
 function datumM:__tostring()
 	return ("BYOND %s [0x%x%06x]"):format(types[tonumber(self.handle.type)], self.handle.type, self.handle.value)
 end
+
 function datumM:ref()
 	return ("[0x%x%06x]"):format(self.handle.type, self.handle.value)
 end
+
+function listM:__index(acc)
+	if acc == "length" then
+		return self.internal_list.length
+	elseif acc == "append" then
+		return function(val)
+			print(self.id)
+			bvalue = lua2value(val)
+			AppendToContainer(List, self.id, bvalue.type, bvalue.value)
+		end
+	elseif acc == "remove" then
+		return function(val)
+			bvalue = lua2value(val)
+			RemoveFromContainer(List, self.id, bvalue.type, bvalue.value)
+		end
+	end
+	if(acc-1 < self.internal_list.length) then
+		return value2lua(self.internal_list.elements[acc-1])
+	else
+		return nil
+	end
+end
+
+function listM:__newindex(index, newval)
+	if(index-1 < self.length) then
+		self.internal_list.elements[index-1] = lua2value(newval)
+	end
+end
+
 function M.toLuaString(index)
 	local entry = GetStringTableIndexPtr(index)
 	if not entry then return end
@@ -225,10 +294,12 @@ local procMeta = {} procMeta.__index = procMeta
 function procMeta:__tostring()
 	return '[BYOND Proc #'..self.id..']: ' .. self.path
 end
+
 local prochooks = {}
 function procMeta:hook(callback)
 	prochooks[self.id] = callback
 end
+
 function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
@@ -239,6 +310,7 @@ function procMeta:__call(...)
 	local vals = ffi.new('Value[' .. #argv .. ']', argv)
 	return value2lua(procCallHook.trampoline( 0, 0 --[[no src]], 2, self.id, 0, 0, 0, vals, #argv, 0, 0 --[[no callback]] ))
 end
+
 for i = 0, 0xFFFFFF do
 	local entry = GetProcArrayEntry(i)
 	if entry ~= ffi.null then
