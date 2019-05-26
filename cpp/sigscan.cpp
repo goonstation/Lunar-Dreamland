@@ -34,10 +34,32 @@ void* Pocket::Sigscan::FindPattern(std::uintptr_t address, size_t size, const ch
 
 void* Pocket::Sigscan::FindPattern(const char* moduleName, const char* pattern, const short offset)
 {
-	const auto rangeStart = reinterpret_cast<DWORD>(GetModuleHandleA(moduleName));
-	if (rangeStart == 0)
+	
+	uint32_t rangeStart;
+	uint32_t size;
+#ifdef _WIN32
+	if (!(rangeStart = reinterpret_cast<DWORD>(GetModuleHandleA(moduleName))))
 		return nullptr;
 	MODULEINFO miModInfo; GetModuleInformation(GetCurrentProcess(), reinterpret_cast<HMODULE>(rangeStart), &miModInfo, sizeof(MODULEINFO));
+	size = miModInfo.SizeOfImage;
+#else
 
-	return FindPattern(rangeStart, miModInfo.SizeOfImage, pattern, offset);
+	Dl_info info;
+	struct stat buf;
+	void* hdl;
+	if(!(hdl = dlopen(moduleName, RTLD_NOLOAD))) return nullptr;
+
+	if (!dladdr(hdl, &info)) return nullptr;
+
+	if (!info.dli_fbase || !info.dli_fname)
+	return nullptr;
+
+	if (stat(info.dli_fname, &buf) != 0)
+	return nullptr;
+
+	rangeStart = reinterpret_cast<uint32_t>(info.dli_fbase);
+	size = buf.st_size;
+#endif
+
+	return FindPattern(rangeStart, size, pattern, offset);
 }

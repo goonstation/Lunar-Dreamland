@@ -114,8 +114,10 @@ extern "C" __declspec(dllexport) const char* BHOOK_Init(int n, char* v[]) {
 	lua_pushcfunction(L, lj_get_module);
 	lua_setfield(L, -2, "getModule");
 	lua_setglobal(L, "hook");
+#ifdef _WIN32
 	AllocConsole();
 	freopen("CONOUT$", "w", stdout);
+#endif
 	return "Setup complete!";
 }
 extern "C" __declspec(dllexport) const char* BHOOK_RunLua(int n, char* v[]) {
@@ -139,6 +141,19 @@ extern "C" __declspec(dllexport) const char* BHOOK_RunLua(int n, char* v[]) {
 		return "!Lua not loaded!";
 	}
 }
+extern "C" __declspec(dllexport) const char* BHOOK_Unload(int n, char* v[]) {
+	if (L) {
+		lua_close(L);
+		delete m_activeDisassembler;
+		m_activeDisassembler = nullptr;
+		L = nullptr;
+		return "Unloaded!";
+	}
+	else {
+		return "!Already unloaded!";
+	}
+}
+#ifdef _WIN32
 static HINSTANCE us;
 BOOL WINAPI DllMain(
 	_In_ HINSTANCE hinstDLL,
@@ -152,18 +167,7 @@ BOOL WINAPI DllMain(
 	}
 	return TRUE;
 }
-extern "C" __declspec(dllexport) const char* BHOOK_Unload(int n, char* v[]) {
-	if (L) {
-		lua_close(L);
-		delete m_activeDisassembler;
-		m_activeDisassembler = nullptr;
-		L = nullptr;
-		return "Unloaded!";
-	}
-	else {
-		return "!Already unloaded!";
-	}
-}
+
 int test(lua_State* L) {
 	void* ptr = (void*)lua_tointeger(L, 1);
 	printf("ptr: %p\n", ptr);
@@ -190,3 +194,5 @@ original = ffi.cast('void(*)()', hook)
 print(original)
 print("Test end.")
 )[]";
+
+#endif

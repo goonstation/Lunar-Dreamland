@@ -12,11 +12,11 @@
 	//dud
 /client/proc/myName()
 	return src.key
-/client/proc/hookme(var/mob/thing)
-	return 1000
+/client/proc/hookme(var/mob/cat)
+	return cat.name
 /client/verb/globalProc()
 	world << "You are: [usr.name] (\ref[usr])"
-	hookme(usr)
+	hookme(cat=usr, dog = src)
 	world << "However, now you are [usr.name] (\ref[src])"
 /proc/WorldOutput(var/text)
 	world << text
@@ -24,3 +24,4 @@
 	world << "WTF"
 /client/verb/lokayt(var/t as text)
 	world << locate(t)
+var/global/cats=1
