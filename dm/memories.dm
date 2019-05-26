@@ -32,6 +32,8 @@
 /client/verb/print_list()
 	for(var/e in listvar)
 		world << e
+/client/verb/list_append()
+	listvar += "a"
 var/global/cats=1
 var/init_res = ""
 /world/New()
