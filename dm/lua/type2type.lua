@@ -1,6 +1,7 @@
 local ffi = require('ffi')
 local consts = require('defines')
 local signatures = require('signatures')
+require('list')
 
 local M = {}
 local function ptr(n) return tonumber( ffi.cast('uint64_t', n) ) end
@@ -10,15 +11,15 @@ function M.str2val(str)
 	return ffi.new('Value', {type = consts.String, value = idx})
 end
 
-
-
 M.luaHandlers = {
 	[consts.String] = function(val) return M.idx2str(val.value) end,
-	[consts.Number] = function(val) return tonumber(value.valueF) end,
+	[consts.Number] = function(val) return tonumber(val.valueF) end,
 	[consts.Null] = function() return nil end,
-	
+	[consts.List] = function(val)
+		return setmetatable({internal_list = signatures.GetListArrayEntry(val.value), handle = val}, listMeta)
+	end
 }
-function M.toLua(value)
+function toLua(value)
 	local t = M.luaHandlers[tonumber(value.type)]
 	if t then
 		return t(value)
@@ -27,7 +28,7 @@ function M.toLua(value)
 	end
 end
 --use refcount if we're assigning or invoking
-function M.toValue(value, refcount)
+function toValue(value, refcount)
 	local t = type(value)
 	if t == 'string' then--NYI: port to table accessors
 		if refcount then

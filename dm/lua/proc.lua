@@ -24,11 +24,11 @@ function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
 	for i = 1, #args do
-		local v = t2t.toLua(args[i])
+		local v = toLua(args[i])
 		if v then table.insert(argv, v) end	
 	end
 	local vals = ffi.new('Value[' .. #argv .. ']', argv)
-	return t2t.toLua(signatures.CallGlobalProc( 0, 0 --[[no src]], 2, self.id, 0, 0, 0, vals, #argv, 0, 0 --[[no callback]] ))
+	return toLua(signatures.CallGlobalProc( 0, 0 --[[no src]], 2, self.id, 0, 0, 0, vals, #argv, 0, 0 --[[no callback]] ))
 end
 for i = 0, 0xFFFFFF do
 	local entry = signatures.GetProcArrayEntry(i)
@@ -59,15 +59,15 @@ local hook = M.hook(signatures.CallGlobalProc, function(original, usrType, usrVa
 	if M.procHooks[tonumber(procid)] then
 		local luad = {}
 		for i = 1, tonumber(argc) do
-			luad[i] = t2t.toLua(argv[i-1])--dont skip arguments if they fail conversion
+			luad[i] = toLua(argv[i-1])--dont skip arguments if they fail conversion
 		end
-		return t2t.toValue(M.procHooks[tonumber(procid)](function(...)
+		return toValue(M.procHooks[tonumber(procid)](function(...)
 			local honk = {}
 			for k, v in pairs{...} do
-				honk[k] = t2t.toValue(v)
+				honk[k] = toValue(v)
 			end
-			return t2t.toLua(original(usrType, usrVal, flags, procid, d, srcType, srcVal, ffi.new('Value[' .. #honk .. ']', honk), #honk, 0, 0))
-		end, t2t.toLua(ffi.new('Value', {type=usrType, value=usrVal})), t2t.toLua(ffi.new('Value', {type=srcType, value=srcVal})), unpack(luad))).longlongman
+			return toLua(original(usrType, usrVal, flags, procid, d, srcType, srcVal, ffi.new('Value[' .. #honk .. ']', honk), #honk, 0, 0))
+		end, toLua(ffi.new('Value', {type=usrType, value=usrVal})), toLua(ffi.new('Value', {type=srcType, value=srcVal})), unpack(luad))).longlongman
 	else
 		local ret = original(usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 		return ret.longlongman

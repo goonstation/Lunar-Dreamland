@@ -16,7 +16,7 @@ sigscan("CallProc", "CallProcPtr", "55 8B EC 83 EC 0C 53 8B 5D 10 8D 45 FF 56 8B
 sigscan("GetProcArrayEntry", "GetProcArrayEntryPtr", "55 8B EC 8B 45 08 3B 05 ?? ?? ?? ?? 72 04 33 C0 5D C3 8D 0C C0 A1 ?? ?? ?? ?? 8D 04 88 5D C3")
 sigscan("ThrowDMError", "ThrowDMErrorPtr", "55 8B EC 6A FF 68 ?? ?? ?? ?? 64 A1 ?? ?? ?? ?? 50 83 EC 40 53 56 57 A1 ?? ?? ?? ?? 33 C5 50 8D 45 F4 64 A3 ?? ?? ?? ?? 89 65 F0 A1 ?? ?? ?? ?? 32 DB 85 C0 74 29 80 78 6B 02 0F 83 ?? ?? ?? ??")
 sigscan("GetListArrayEntry", "GetListArrayEntryPtr", "55 8B EC 8B 4D 08 3B 0D ?? ?? ?? ?? 73 11 A1 ?? ?? ?? ?? 8B 04 88 85 C0 74 05 FF 40 10 5D C3 6A 0F 51 E8 ?? ?? ?? ?? 68 ?? ?? ?? ?? 52 50 E8 ?? ?? ?? ?? 83 C4 14 5D C3")
---sigscan("AppendToContainer", "AppendToContainerPtr", "55 8B EC 8B 4D 08 0F B6 C1 48 56 83 F8 53 0F 87 B1 00 00 00 0F B6 80 FC 20 BA 73 FF 24 85 B0 20 BA 73 FF 75 0C E8 A6 35 FF FF 8B F0 83 C4 04 85 F6 0F 84 9B 00 00 00 8B 46 0C 40 50 56 E8 7E 25 08 00 8B 56 0C 83 C4 08 85 D2 74 79 8B 0E 8B 45 10 89 44 D1 F8 8B 45 14 89 44 D1 FC FF 75 14 FF 75 10 E8 69 64 08 00")
+sigscan("AppendToContainer", "AppendToContainerPtr", "55 8B EC 8B 4D 08 0F B6 C1 48 56 83 F8 53 0F")
 sigscan("RemoveFromContainer", "RemoveFromContainerPtr", "55 8B EC 8B 45 08 3B 05 ? ? ? ? 72 04 33 C0 5D C3 8D 0C C0 A1 ? ? ? ? 8D 04 88 5D C3")
 
 return ret

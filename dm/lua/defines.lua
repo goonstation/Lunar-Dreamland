@@ -24,6 +24,7 @@ M.List			= 0x0F
 M.Datum			= 0x21
 M.Path			= 0x26
 M.Number 		= 0x2A
+M.ConstList		= 0x53 --Might be a read-only or a fixed size list (cannot append)
 
 M.types = {
 	[0x00] = "Null"        ,
@@ -44,6 +45,7 @@ M.types = {
 	[0x21] = "Datum"       ,
 	[0x26] = "Path"        ,
 	[0x2A] = "Number"      ,
+	[0x53] = "ConstList"   ,
 	["Null"] = 0x00        ,
 	["Turf"] = 0x01        ,
 	["Obj"] = 0x02         ,
@@ -61,7 +63,8 @@ M.types = {
 	["List"] = 0x0F        ,
 	["Datum"] = 0x21       ,
 	["Path"] = 0x26        ,
-	["Number"] = 0x2A
+	["Number"] = 0x2A	   ,
+	["ConstList"] = 0x53   ,
 }
 
 M.null = ffi.new('Value', {type = M.Null, value = 0})

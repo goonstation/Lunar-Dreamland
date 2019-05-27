@@ -9,7 +9,8 @@ local M = {}--setmetatable(datumM, {__index=datumM})-- datumM.__index = datumM
 local meta = {}
 M.type = meta
 function meta:__index(key)
-	return rawget(meta, key) or t2t.toLua( GetVariable( self.handle.type, self.handle.value, t2t.str2val(key) ) )
+	local byond_str = t2t.str2val(key)
+	return rawget(meta, key) or toLua( signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value) )
 end
 
 function meta:__newindex(key, val)
