@@ -5,8 +5,15 @@
 #include <Psapi.h>
 #else
 // lol
-#endif
+#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <link.h>
+#include <cstring>
+#include <cstdio>
 
+#endif
 #define INRANGE(x,a,b)	(x >= a && x <= b) 
 #define getBits( x )	(INRANGE((x&(~0x20)),'A','F') ? ((x&(~0x20)) - 'A' + 0xa) : (INRANGE(x,'0','9') ? x - '0' : 0))
 #define getByte( x )	(getBits(x[0]) << 4 | getBits(x[1]))
@@ -31,12 +38,33 @@ void* Pocket::Sigscan::FindPattern(std::uintptr_t address, size_t size, const ch
 
 	return nullptr;
 }
+#ifndef _WIN32
+static void* disgusting;
+size_t disgustingSz;
+static int
+callback(struct dl_phdr_info* info, size_t size, void* data)
+{
+	int j;
+	//printf("name: %s vs %s\n", info->dlpi_name, (const char*)data);
+	if (!strstr(info->dlpi_name, (const char*)data)) return 0;
+	for (j = 0; j < info->dlpi_phnum; j++) {
 
+		if (info->dlpi_phdr[j].p_type == PT_LOAD) {
+			char* beg = (char*)info->dlpi_addr + info->dlpi_phdr[j].p_vaddr;
+			char* end = beg + info->dlpi_phdr[j].p_memsz;
+			disgusting = beg;
+			disgustingSz = info->dlpi_phdr[j].p_memsz;
+			return 0;
+		}
+	}
+	return 0;
+}
+#endif
 void* Pocket::Sigscan::FindPattern(const char* moduleName, const char* pattern, const short offset)
 {
-	
-	uint32_t rangeStart;
-	uint32_t size;
+
+	size_t rangeStart;
+	size_t size;
 #ifdef _WIN32
 	if (!(rangeStart = reinterpret_cast<DWORD>(GetModuleHandleA(moduleName))))
 		return nullptr;
@@ -44,22 +72,14 @@ void* Pocket::Sigscan::FindPattern(const char* moduleName, const char* pattern, 
 	size = miModInfo.SizeOfImage;
 #else
 
-	Dl_info info;
-	struct stat buf;
-	void* hdl;
-	if(!(hdl = dlopen(moduleName, RTLD_NOLOAD))) return nullptr;
+	disgusting = nullptr;
+	dl_iterate_phdr(callback, (void*)moduleName);
+	if (!disgusting) {
+		return nullptr;
+	}
 
-	if (!dladdr(hdl, &info)) return nullptr;
-
-	if (!info.dli_fbase || !info.dli_fname)
-	return nullptr;
-
-	if (stat(info.dli_fname, &buf) != 0)
-	return nullptr;
-
-	rangeStart = reinterpret_cast<uint32_t>(info.dli_fbase);
-	size = buf.st_size;
+	rangeStart = reinterpret_cast<size_t>(disgusting);
+	size = disgustingSz;
 #endif
-
 	return FindPattern(rangeStart, size, pattern, offset);
 }

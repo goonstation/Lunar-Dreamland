@@ -10,6 +10,24 @@ extern "C" {
 
 }
 #include <sigscan.h>
+
+#if defined(_MSC_VER)
+//  Microsoft 
+#define EXPORT __declspec(dllexport)
+#define IMPORT __declspec(dllimport)
+#elif defined(__GNUC__)
+//  GCC
+#define EXPORT __attribute__((visibility("default")))
+#define IMPORT
+#include <dlfcn.h>
+#include <link.h>
+#else
+//  do nothing and hope for the best?
+#define EXPORT
+#define IMPORT
+#pragma warning Unknown dynamic link import/export semantics.
+#endif
+
 static PLH::CapstoneDisassembler* m_activeDisassembler;
 static int lj_hook_table;
 lua_State* L = nullptr;
@@ -64,17 +82,17 @@ void bh_initmetatables() {
 	}
 }
 
-static int lj_new_hook(lua_State* L) {
+static int lj_new_hook(lua_State * L) {
 	void* orig = (void*)lua_tointeger(L, 1);
 	void* hook = (void*)lua_tointeger(L, 2);
 	uint64_t trampoline;
-	PLH::x86Detour* detour = new (lua_newuserdata(L, sizeof(PLH::x86Detour))) PLH::x86Detour((const char*) orig, (const char*) hook, &trampoline, *m_activeDisassembler);
+	PLH::x86Detour* detour = new (lua_newuserdata(L, sizeof(PLH::x86Detour))) PLH::x86Detour((const char*)orig, (const char*)hook, &trampoline, *m_activeDisassembler);
 	luaL_setmetatable(L, "PLH::x86Detour");
-	
+
 	return 1;
 
 }
-static int lj_sigscan(lua_State* L) {
+static int lj_sigscan(lua_State * L) {
 	if (lua_isnumber(L, 1)) {
 		lua_pushinteger(L, (lua_Integer)Pocket::Sigscan::FindPattern(lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tostring(L, 3), (short)luaL_optnumber(L, 4, 0)));
 		return 1;
@@ -85,17 +103,43 @@ static int lj_sigscan(lua_State* L) {
 		return 1;
 	}
 }
-static int lj_get_module(lua_State* L) {
+#ifndef _WIN32
+static void* disgusting;
+static int callback(struct dl_phdr_info* info, size_t size, void* data)
+{
+	int j;
+	//printf("name: %s vs %s\n", info->dlpi_name, (const char*)data);
+	if (!strstr(info->dlpi_name, (const char*)data)) return 0;
+	for (j = 0; j < info->dlpi_phnum; j++) {
+
+		if (info->dlpi_phdr[j].p_type == PT_LOAD) {
+			char* beg = (char*)info->dlpi_addr + info->dlpi_phdr[j].p_vaddr;
+			char* end = beg + info->dlpi_phdr[j].p_memsz;
+			disgusting = beg;
+			return 0;
+		}
+	}
+	return 0;
+}
+#endif
+static int lj_get_module(lua_State * L) {
+#ifdef _WIN32
 	auto addr = GetModuleHandleA(lua_tostring(L, 1));
+#else
+	disgusting = nullptr;
+	dl_iterate_phdr(callback, (void*)lua_tostring(L, 1));
+	auto addr = (uintptr_t)disgusting;
+
+#endif
 	if (addr) {
-		lua_pushinteger(L, (lua_Integer)addr);
+		lua_pushnumber(L, (lua_Number)(uintptr_t)addr);//This is a SIN
 	}
 	else {
 		lua_pushnil(L);
 	}
 	return 1;
 }
-extern "C" __declspec(dllexport) const char* BHOOK_Init(int n, char* v[]) {
+extern "C" EXPORT const char* BHOOK_Init(int n, char* v[]) {
 	if (L) {
 		return "ERROR: Already initialized.";
 	}
@@ -120,7 +164,7 @@ extern "C" __declspec(dllexport) const char* BHOOK_Init(int n, char* v[]) {
 #endif
 	return "Setup complete!";
 }
-extern "C" __declspec(dllexport) const char* BHOOK_RunLua(int n, char* v[]) {
+extern "C" EXPORT const char* BHOOK_RunLua(int n, char* v[]) {
 	if (n > 0 && L) {
 		switch (luaL_loadstring(L, v[0])) {
 		case 0: {
@@ -134,14 +178,14 @@ extern "C" __declspec(dllexport) const char* BHOOK_RunLua(int n, char* v[]) {
 			return lua_tostring(L, -1);
 		}
 	}
-	else if(L){
+	else if (L) {
 		return "!Not enough arguments!";
 	}
 	else {
 		return "!Lua not loaded!";
 	}
 }
-extern "C" __declspec(dllexport) const char* BHOOK_Unload(int n, char* v[]) {
+extern "C" EXPORT const char* BHOOK_Unload(int n, char* v[]) {
 	if (L) {
 		lua_close(L);
 		delete m_activeDisassembler;
@@ -168,7 +212,7 @@ BOOL WINAPI DllMain(
 	return TRUE;
 }
 
-int test(lua_State* L) {
+int test(lua_State * L) {
 	void* ptr = (void*)lua_tointeger(L, 1);
 	printf("ptr: %p\n", ptr);
 	void* (*test)() = (void* (*)())ptr;
