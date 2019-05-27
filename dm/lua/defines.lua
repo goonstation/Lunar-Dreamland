@@ -1,5 +1,5 @@
-local ffi = require('cdef')
-
+local ffi = require('ffi')
+require'cdef'
 local M = {}
 M.Null			= 0x00
 M.Turf			= 0x01
@@ -65,7 +65,6 @@ M.types = {
 }
 
 M.null = ffi.new('Value', {type = M.Null, value = 0})
-M.world = setmetatable({handle={type = M.World, value = 0x0}}, datumM)
-M.global = setmetatable({handle={type = M.World, value = 0x1}}, datumM)
+
 
 return M

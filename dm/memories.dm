@@ -16,9 +16,7 @@
 /client/proc/hookme(var/mob/cat)
 	return cat.name
 /client/verb/globalProc()
-	world << "You are: [usr.name] (\ref[usr])"
-	hookme(cat=usr, dog = src)
-	world << "However, now you are [usr.name] (\ref[src])"
+	world << hookme(usr)
 /proc/WorldOutput(var/text)
 	world << text
 /client/proc/wtf()
@@ -38,9 +36,10 @@ var/global/cats=1
 var/init_res = ""
 /world/New()
 	..()
+
+/client/verb/init()
 	init_res += call("hookerino.dll","BHOOK_Init")()
 	init_res += call("hookerino.dll", "BHOOK_RunLua")("dofile'boom.lua'")
-
 /client/New()
 	..()
 	src << init_res
