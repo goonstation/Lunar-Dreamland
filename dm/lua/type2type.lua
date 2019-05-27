@@ -1,7 +1,6 @@
 local ffi = require('ffi')
 local consts = require('defines')
 local signatures = require('signatures')
-require('list')
 
 local M = {}
 local function ptr(n) return tonumber( ffi.cast('uint64_t', n) ) end
@@ -15,11 +14,9 @@ M.luaHandlers = {
 	[consts.String] = function(val) return M.idx2str(val.value) end,
 	[consts.Number] = function(val) return tonumber(val.valueF) end,
 	[consts.Null] = function() return nil end,
-	[consts.List] = function(val)
-		return setmetatable({internal_list = signatures.GetListArrayEntry(val.value), handle = val}, listMeta)
-	end
 }
-function toLua(value)
+
+function M.toLua(value)
 	local t = M.luaHandlers[tonumber(value.type)]
 	if t then
 		return t(value)
@@ -28,7 +25,7 @@ function toLua(value)
 	end
 end
 --use refcount if we're assigning or invoking
-function toValue(value, refcount)
+function M.toValue(value, refcount)
 	local t = type(value)
 	if t == 'string' then--NYI: port to table accessors
 		if refcount then
@@ -49,6 +46,7 @@ function toValue(value, refcount)
 		end
 	else print('??? type: ' .. a) end
 end
+
 local strcache = {}
 function M.idx2str(index)
 	if index == 0xFFFF then return '' end--null or blank string not sure which is more proper
@@ -59,4 +57,5 @@ function M.idx2str(index)
 	strcache[tonumber(index)] = cache
 	return cache
 end
+
 return M

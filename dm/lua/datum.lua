@@ -10,7 +10,7 @@ local meta = {}
 M.type = meta
 function meta:__index(key)
 	local byond_str = t2t.str2val(key)
-	return rawget(meta, key) or toLua( signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value) )
+	return rawget(meta, key) or t2t.toLua( signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value) )
 end
 
 function meta:__newindex(key, val)
