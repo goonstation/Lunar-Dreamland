@@ -47,7 +47,7 @@ luaL_Reg lj_plhdetour[] = {
 		uint64_t trampoline;
 		detour->m_userTrampVar = &trampoline;
 		if (detour->hook()) {
-			lua_pushinteger(L, (lua_Integer)trampoline);
+			lua_pushnumber(L, (uintptr_t)trampoline);
 		}
 		else
 		   lua_pushboolean(L, 0);
@@ -65,7 +65,7 @@ luaL_Reg lj_plhdetour[] = {
 	}},
 	{"getTrampoline", [](lua_State * L) {
 		auto detour = (PLH::x86Detour*) luaL_checkudata(L, 1, "PLH::x86Detour");
-		lua_pushinteger(L, (lua_Integer)detour->m_trampoline);
+		lua_pushnumber(L, (uintptr_t)detour->m_trampoline);
 		return 1;
 	}},
 	{nullptr, nullptr}
@@ -83,8 +83,8 @@ void bh_initmetatables() {
 }
 
 static int lj_new_hook(lua_State * L) {
-	void* orig = (void*)lua_tointeger(L, 1);
-	void* hook = (void*)lua_tointeger(L, 2);
+	void* orig = (void*)(uintptr_t)lua_tonumber(L, 1);
+	void* hook = (void*)(uintptr_t)lua_tonumber(L, 2);
 	uint64_t trampoline;
 	PLH::x86Detour* detour = new (lua_newuserdata(L, sizeof(PLH::x86Detour))) PLH::x86Detour((const char*)orig, (const char*)hook, &trampoline, *m_activeDisassembler);
 	luaL_setmetatable(L, "PLH::x86Detour");
@@ -94,12 +94,15 @@ static int lj_new_hook(lua_State * L) {
 }
 static int lj_sigscan(lua_State * L) {
 	if (lua_isnumber(L, 1)) {
-		lua_pushinteger(L, (lua_Integer)Pocket::Sigscan::FindPattern(lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tostring(L, 3), (short)luaL_optnumber(L, 4, 0)));
+		luaL_gsub(L, lua_tostring(L, 3), " ? ", " ?? ");
+		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tostring(L, -1), (short)luaL_optnumber(L, 4, 0)));
+		lua_pop(L, 1);
 		return 1;
 	}
 	else {
-		const char* module = lua_tostring(L, 1);
-		lua_pushinteger(L, (lua_Integer)Pocket::Sigscan::FindPattern(lua_tostring(L, 1), lua_tostring(L, 2), (short)luaL_optnumber(L, 3, 0)));
+		luaL_gsub(L, lua_tostring(L, 2), " ? ", " ?? ");
+		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tostring(L, 1), lua_tostring(L, 2), (short)luaL_optnumber(L, 3, 0)));
+		lua_pop(L, 1);
 		return 1;
 	}
 }
