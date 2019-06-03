@@ -24,7 +24,7 @@ function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
 	for i = 1, #args do
-		local v = t2t.toLua(args[i])
+		local v = t2t.toLua(args[i], true)
 		if v then table.insert(argv, v) end	
 	end
 	local vals = ffi.new('Value[' .. #argv .. ']', argv)
@@ -55,7 +55,7 @@ function M.getProc(path)
 	return typecache.procs[path]
 end
 
-local hook = M.hook(signatures.CallGlobalProc, function(original, usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
+M.callGlobalProcHook = M.hook(signatures.CallGlobalProc, function(original, usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 	--print("this message means code is working")
 	local theProc = signatures.GetProcArrayEntry(procid)
 	--if byond.toLuaString(theProc.procPath) == '/proc/conoutput' and argc == 1 then
@@ -80,9 +80,8 @@ local hook = M.hook(signatures.CallGlobalProc, function(original, usrType, usrVa
 	end
 end, 'long long(*)(char usrType, int usrVal, int const_2, unsigned int proc_id, int const_0, char srcType, int srcVal, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3)', constants.null.longlongman)
 
-
-print("")
 signatures.CallGlobalProcEx = signatures.CallGlobalProcEx or signatures.CallGlobalProc
-signatures.CallGlobalProc = hook.trampoline
+signatures.CallGlobalProc = M.callGlobalProcHook.trampoline
+
 
 return M

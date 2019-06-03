@@ -36,6 +36,7 @@ function M.hook(fn, callback, cbType, errRet) --print('hooking thing', fn)do ret
 	if tramp then
 		entry.trampoline = ffi.cast( ffi.typeof(fn), tramp )
 	else return nil end
+	entry.hook = hook
 	hooks[fn] = entry
 	return entry
 end

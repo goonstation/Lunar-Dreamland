@@ -12,7 +12,7 @@ end
 
 M.luaHandlers = {
 	[consts.String] = function(val) return M.idx2str(val.value) end,
-	[consts.Number] = function(val) return tonumber(val.valueF) end,
+	[consts.Number] = function(val) return tonumber(val.valuef) end,
 	[consts.Null] = function() return nil end,
 }
 
@@ -29,9 +29,10 @@ function M.toValue(value, refcount)
 	local t = type(value)
 	if t == 'string' then--NYI: port to table accessors
 		if refcount then
-			--local ret = ffi.new('Value', {type=consts.String, value=signatures.GetStringTableIndex(value, 0, 1)})
-			--local entry = 
-			return ffi.new('Value', {type=consts.String, value=signatures.GetStringTableIndex(value, 0, 1)})--nyi
+			idx = signatures.GetStringTableIndex(value, 0, 1)
+			ref = signatures.GetStringTableIndexPtr(idx)
+			ref.refcount = ref.refcount + 1
+			return ffi.new('Value', {type=consts.String, value=idx})
 		else
 			return ffi.new('Value', {type=consts.String, value=signatures.GetStringTableIndex(value, 0, 1)})
 		end

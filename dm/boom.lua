@@ -18,4 +18,5 @@ end)
 proc.getProc('/client/proc/list_stuff'):hook(function(original, usr, src)
 	src.listvar[1] = 15
 	src.listvar:append("Hello, world!")
+	src:invoke("proccall_print", "test")
 end)

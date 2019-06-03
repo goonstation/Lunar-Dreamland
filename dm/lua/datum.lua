@@ -13,6 +13,25 @@ function meta:__index(key)
 	return rawget(meta, key) or t2t.toLua( signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value) )
 end
 
+--[[function meta:__index(key) --WIP, requires being able to catch exceptions
+	local byond_str = t2t.str2val(key)
+	local val = signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value)
+	if val == some magic bullshit then
+		return function( procName, ... )
+			procName:gsub("_", " ")
+			local args = {...}
+			local argv = {}
+			for i = 1, #args do
+				local v = t2t.toValue(args[i], true)
+				if v then table.insert(argv, v) end
+			end
+			local vals = ffi.new('Value[' .. #argv .. ']', argv)
+			return t2t.toLua(signatures.CallProc( 0, 0, 2, t2t.str2val(procName).value, self.handle.type, self.handle.value, vals, #argv, 0, 0 ))
+		end
+	end
+	return rawget(meta, key) or t2t.toLua(val)
+end]]
+
 function meta:__newindex(key, val)
 	local converted = t2t.toValue(val, true) or M.null
 	SetVariable( self.handle.type, self.handle.value, t2t.str2val( key ), converted.type, converted.value )
@@ -20,16 +39,18 @@ end
 
 
 function meta:invoke( procName, ... )
-	local proc = byond.getProc( procName )
-	if not proc then error('no such proc ' .. procName) end
+	--[[local proc = byond.getProc( procName )
+	if not proc then error('no such proc ' .. procName) end]]
+	procName = procName:gsub("_", " ")
 	local args = {...}
 	local argv = {}
 	for i = 1, #args do
-		local v = t2t.toValue(args[i])
+		local v = t2t.toValue(args[i], true)
 		if v then table.insert(argv, v) end
 	end
 	local vals = ffi.new('Value[' .. #argv .. ']', argv)
-	return t2t.toLua(signatures.CallGlobalProcEx( 0, 0, 2, proc.id, 0, self.handle.type, self.handle.value, vals, #argv, 0, 0 --[[no callback]] ))
+	--return t2t.toLua(signatures.CallGlobalProcEx( 0, 0, 2, proc.id, 0, self.handle.type, self.handle.value, vals, #argv, 0, 0 --[[no callback]] ))
+	return t2t.toLua(signatures.CallProc( 0, 0, 2, t2t.str2val(procName).value, self.handle.type, self.handle.value, vals, #argv, 0, 0 --[[no callback]] ))
 end
 
 function meta:__eq(b) if not b then return self == M.null end
