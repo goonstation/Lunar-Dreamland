@@ -34,7 +34,7 @@ end]]
 
 function meta:__newindex(key, val)
 	local converted = t2t.toValue(val, true) or M.null
-	SetVariable( self.handle.type, self.handle.value, t2t.str2val( key ), converted.type, converted.value )
+	signatures.SetVariable( self.handle.type, self.handle.value, t2t.str2val( key ), converted.type, converted.value )
 end
 
 

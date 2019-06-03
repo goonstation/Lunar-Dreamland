@@ -57,7 +57,7 @@ end
 
 M.callGlobalProcHook = M.hook(signatures.CallGlobalProc, function(original, usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
 	--print("this message means code is working")
-	local theProc = signatures.GetProcArrayEntry(procid)
+	--local theProc = signatures.GetProcArrayEntry(procid)
 	--if byond.toLuaString(theProc.procPath) == '/proc/conoutput' and argc == 1 then
 	--	print('dbg: ' ..byond.toLuaString(argv[0].value))
 	--	return byond.null.longlongman
