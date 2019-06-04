@@ -9,7 +9,6 @@ local typecache = {
 	procs = {}
 }
 
-
 local procMeta = {} procMeta.__index = procMeta
 function procMeta:__tostring()
 	return '[BYOND Proc #'..self.id..']: ' .. self.path

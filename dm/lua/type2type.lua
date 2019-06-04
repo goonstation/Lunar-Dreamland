@@ -16,6 +16,10 @@ M.luaHandlers = {
 	[consts.Null] = function() return nil end,
 }
 
+for k, v in pairs{consts.MobType, consts.ObjType, consts.DatumType, consts.ClientType} do
+	M.luaHandlers[v] = function(val) return M.idx2str(signatures.Path2Text(val.type, val.value)) end
+end
+
 function M.toLua(value)
 	local t = M.luaHandlers[tonumber(value.type)]
 	if t then
@@ -57,6 +61,25 @@ function M.idx2str(index)
 	local cache = ffi.string( entry.stringData )
 	strcache[tonumber(index)] = cache
 	return cache
+end
+
+function M.text2path(text)
+	return signatures.Text2Path(signatures.GetStringTableIndex(text, 0, 1))
+end
+
+print("consts.MobType")
+for i=0,0xFFFFFF do
+	local xd = M.idx2str(signatures.Path2Text(consts.MobType, i))
+	if #xd == 0 then break end
+	print(i, xd)
+end
+
+print("")
+print("consts.ObjType")
+for i=0,0xFFFFFF do
+	local xd = M.idx2str(signatures.Path2Text(consts.ObjType, i))
+	if #xd == 0 then break end
+	print(i, xd)
 end
 
 return M

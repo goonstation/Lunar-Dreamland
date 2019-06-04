@@ -48,7 +48,14 @@ typedef struct List {
 	int unk5;
 } List;
 
+typedef struct Type {
+	unsigned int path;
+	unsigned int parentTypeIdx;
+	unsigned int last_typepath_part;
+} Type;
+
 ]]
+
 ffi.metatype( 'Value', {
 	__eq = function(a, b)
 		if(ffi.istype('Value', b)) then return a.type == b.type and a.value == b.value

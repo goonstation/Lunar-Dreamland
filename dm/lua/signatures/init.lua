@@ -13,6 +13,9 @@ typedef List*(*GetListArrayEntryPtr)(unsigned int index);
 typedef void(*AppendToContainerPtr)(unsigned char containerType, int containerValue, unsigned char valueType, int newValue);
 typedef void(*RemoveFromContainerPtr)(unsigned char containerType, int containerValue, unsigned char valueType, int newValue);
 typedef String*(*GetStringTableIndexPtr)(int stringId);
+typedef unsigned int(*Path2TextPtr)(unsigned int pathType, unsigned int pathValue);
+typedef Type*(*GetTypeTableIndexPtr)(unsigned int typeIndex);
+typedef unsigned int*(*MobTableIndexToGlobalTableIndex)(unsigned int mobTypeIndex);
 ]]
 
 return require('signatures.' .. (jit.os):lower())

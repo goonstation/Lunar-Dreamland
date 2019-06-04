@@ -34,6 +34,16 @@
 	listvar += "a"
 /client/proc/proccall_print(sth)
 	src << sth
+/datum/type/testing/datum
+/mob/type/testing/mob
+/obj/type/testing/obj
+/client/verb/test_types()
+	var/datum/type/testing/datum/D = new
+	var/mob/type/testing/mob/M = new
+	var/obj/type/testing/obj/O = new
+	typetest(D, M, O)
+/client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
+	//dud
 var/global/cats=1
 var/init_res = ""
 /world/New()

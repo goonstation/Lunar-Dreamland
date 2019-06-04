@@ -9,6 +9,9 @@ local M = {}--setmetatable(datumM, {__index=datumM})-- datumM.__index = datumM
 local meta = {}
 M.type = meta
 function meta:__index(key)
+	if key == "type" then
+		return signatures.GetVariable( self.handle.type, self.handle.value, t2t.str2val(key).value)
+	end
 	local byond_str = t2t.str2val(key)
 	return rawget(meta, key) or t2t.toLua( signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value) )
 end
@@ -33,6 +36,7 @@ end
 end]]
 
 function meta:__newindex(key, val)
+	if key == "type" then return end
 	local converted = t2t.toValue(val, true) or M.null
 	signatures.SetVariable( self.handle.type, self.handle.value, t2t.str2val( key ).value, converted.type, converted.value )
 end
@@ -53,7 +57,8 @@ function meta:invoke( procName, ... )
 	return t2t.toLua(signatures.CallProc( 0, 0, 2, t2t.str2val(procName).value, self.handle.type, self.handle.value, vals, #argv, 0, 0 --[[no callback]] ))
 end
 
-function meta:__eq(b) if not b then return self == M.null end
+function meta:__eq(b)
+	if not b then return self == M.null end
 	if ffi.istype('Value', b) then
 		return self.handle == b
 	else
@@ -62,7 +67,7 @@ function meta:__eq(b) if not b then return self == M.null end
 end
 
 function meta:__tostring()
-	return ("BYOND %s [0x%x%06x]"):format(types[tonumber(self.handle.type)], self.handle.type, self.handle.value)
+	return ("BYOND %s [0x%x%06x]"):format(consts.types[tonumber(self.handle.type)], self.handle.type, self.handle.value)
 end
 
 function meta:ref()

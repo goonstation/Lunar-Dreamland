@@ -3,10 +3,19 @@ print'byond init'
 local byond = require'byond'
 print'proc init'
 local proc = require'proc'
+local signatures = require'signatures'
 print'loading datum'
 require'datum'
 print'loading list'
 require'list'
+print'loading t2t'
+local t2t = require'type2type'
+print'loading defines'
+local consts = require'defines'
+print'loading types'
+local types = require'typepath'
+
+local T = byond.T
 
 print'hooking!'
 proc.getProc('/proc/conoutput'):hook(function(original, msg)
@@ -16,7 +25,14 @@ proc.getProc('/client/proc/hookme'):hook(function(original, usr, src, mob)
 	return original(mob) .. src:invoke('/client/proc/myName')
 end)
 proc.getProc('/client/proc/list_stuff'):hook(function(original, usr, src)
-	src.listvar[1] = 15
-	src.listvar:append("Hello, world!")
-	src:invoke("proccall_print", "test")
+	list = src.listvar
+	list:append("Hello, world2!")
 end)
+proc.getProc('/client/proc/typetest'):hook(function(original, usr, src, d, m, o)
+	print("istype(datum, /datum/type/testing/datum): ", byond.istype(d, T"/datum/type/testing/datum"))
+	print("istype(datum, /datum/type): ", byond.istype(d, T"/datum/type"))
+	print("istype(datum, /datum): ", byond.istype(d, T"/datum"))
+	print("istype(datum, /mob): ", byond.istype(d, T"/mob"))
+end)
+
+print("Hooked everything")
