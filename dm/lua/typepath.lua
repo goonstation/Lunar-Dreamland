@@ -78,7 +78,17 @@ function M.T(typepath)
 end
 
 function M.istype(thingy, wtype)
-	return not (not thingy.type.path:find(wtype.path, 1, true)) --honk
+	thingy_type = thingy.type
+	if thingy_type == wtype then
+		return true
+	end
+	repeat
+		thingy_type = thingy_type.parentType
+		if thingy_type == wtype then
+			return true
+		end
+	until thingy_type.parentType == thingy_type
+	return false
 end
 
 return M
