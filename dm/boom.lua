@@ -43,6 +43,7 @@ proc.getProc("/client/proc/typetest"):hook(
 		print("Datum type:", d.type.path)
 		print("Mob type:", m.type.path)
 		print("Obj type:", o.type.path)
+		print("Datum parent type:", d.type.parentType.path)
 	end
 )
 

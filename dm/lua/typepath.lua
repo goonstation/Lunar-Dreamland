@@ -53,6 +53,17 @@ for i = 0, 0xFFFFFF do
 	end
 end
 
+for k, v in ipairs(M.typecache.types) do
+	local parent = M.typecache.types[v.parentType]
+	if not parent then
+		M.typecache.types[k].parentType = v
+		M.typecache.types[v.path].parentType = v
+	else
+		M.typecache.types[k].parentType = parent
+		M.typecache.types[v.path].parentType = parent
+	end
+end
+
 for i = 0, 0xFFFFFF do
 	local g_index = signatures.MobTableIndexToGlobalTableIndex(i)
 	if g_index == ffi.null then
