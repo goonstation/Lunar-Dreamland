@@ -1,6 +1,6 @@
-local t2t = require'type2type'
-local consts = require('defines')
-local signatures = require('signatures')
+local t2t = require "type2type"
+local consts = require("defines")
+local signatures = require("signatures")
 
 local meta = {}
 
@@ -18,18 +18,20 @@ function meta:__index(acc)
 		return self.internal_list.length
 	end
 	local x = rawget(meta, acc)
-	if x then return x end
-	if(acc >= 1 and acc-1 < self.internal_list.length) then
-		return t2t.toLua(self.internal_list.elements[acc-1])
+	if x then
+		return x
+	end
+	if (acc >= 1 and acc - 1 < self.internal_list.length) then
+		return t2t.toLua(self.internal_list.elements[acc - 1])
 	else
 		return nil
 	end
 end
 
 function meta:__newindex(index, newval)
-	index = tonumber(index) or error('List index must be a number.')
-	if(index >= 1 and index-1 < self.length) then
-		self.internal_list.elements[index-1] = t2t.toValue(newval)
+	index = tonumber(index) or error("List index must be a number.")
+	if (index >= 1 and index - 1 < self.length) then
+		self.internal_list.elements[index - 1] = t2t.toValue(newval)
 	end
 end
 
@@ -45,7 +47,7 @@ function meta:remove(val)
 end
 
 local M = {
-type = meta,
---new = NYI
+	type = meta
+	--new = NYI
 }
 return M

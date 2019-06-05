@@ -1,5 +1,5 @@
-local ffi = require('ffi')
-ffi.cdef[[
+local ffi = require("ffi")
+ffi.cdef [[
 typedef struct String
 {
 	char* stringData;
@@ -56,10 +56,16 @@ typedef struct Type {
 
 ]]
 
-ffi.metatype( 'Value', {
-	__eq = function(a, b)
-		if(ffi.istype('Value', b)) then return a.type == b.type and a.value == b.value
-		elseif( type(b) == 'table' and getmetatable(b) == datumM ) then return a == b.handle end
-		return false
-	end
-})
+ffi.metatype(
+	"Value",
+	{
+		__eq = function(a, b)
+			if (ffi.istype("Value", b)) then
+				return a.type == b.type and a.value == b.value
+			elseif (type(b) == "table" and getmetatable(b) == datumM) then
+				return a == b.handle
+			end
+			return false
+		end
+	}
+)

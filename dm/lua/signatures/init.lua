@@ -1,5 +1,5 @@
-local ffi = require'ffi'
-ffi.cdef[[
+local ffi = require "ffi"
+ffi.cdef [[
 typedef Value(*CallGlobalProc)(char unk1, int unk2, int proc_type, unsigned int proc_id, int const_0, char unk3, int unk4, Value* argList, unsigned int argListLen, int const_0_2, int const_0_3);
 typedef Value(*Text2PathPtr)(unsigned int text);
 typedef unsigned int(*GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
@@ -18,4 +18,4 @@ typedef Type*(*GetTypeTableIndexPtr)(unsigned int typeIndex);
 typedef unsigned int*(*MobTableIndexToGlobalTableIndex)(unsigned int mobTypeIndex);
 ]]
 
-return require('signatures.' .. (jit.os):lower())
+return require("signatures." .. (jit.os):lower())
