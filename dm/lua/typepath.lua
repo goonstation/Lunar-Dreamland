@@ -7,7 +7,7 @@ local M = require "byond"
 local meta = {}
 
 t2t.luaHandlers[consts.MobType] = function(val)
-	return typecache.mobtypes[val.value]
+	return M.typecache.mobtypes[val.value]
 end
 
 for k, v in pairs {
@@ -58,7 +58,7 @@ for i = 0, 0xFFFFFF do
 	if g_index == ffi.null then
 		break
 	end
-	M.typecache.mobtypes[i] = M.typecache.types[g_index[0]].type
+	M.typecache.mobtypes[i] = M.typecache.types[g_index[0]]
 	M.typecache.mobtypes[M.typecache.types[g_index[0]].path] = M.typecache.types[g_index[0]]
 end
 
