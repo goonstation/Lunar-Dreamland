@@ -34,13 +34,19 @@
 	listvar += "a"
 /client/proc/proccall_print(sth)
 	src << sth
-/datum/type/testing/datum
-/mob/type/testing/mob
-/obj/type/testing/obj
+/client/verb/istypespeed()
+	var/mob/type/testing/mob/mtest/M = new
+	var/x
+	for(var/i=1 to 100000)
+		x = istype(M, /datum)
+	return x
+/datum/type/testing/datum/dtest
+/mob/type/testing/mob/mtest
+/obj/type/testing/obj/otest
 /client/verb/test_types()
-	var/datum/type/testing/datum/D = new
-	var/mob/type/testing/mob/M = new
-	var/obj/type/testing/obj/O = new
+	var/datum/type/testing/datum/dtest/D = new
+	var/mob/type/testing/mob/mtest/M = new
+	var/obj/type/testing/obj/otest/O = new
 	typetest(D, M, O)
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	//dud

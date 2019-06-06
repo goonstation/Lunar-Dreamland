@@ -7,12 +7,23 @@ local signatures = require "signatures"
 local M = {}
 --setmetatable(datumM, {__index=datumM})-- datumM.__index = datumM
 
-local meta = {}
+local meta = {
+	cached_type = nil
+}
 M.type = meta
 function meta:__index(key)
-	--if key == "type" then
-	--	return signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2val(key).value)
-	--end
+	if key == "type" then
+		local c = rawget(self, "cached_type")
+		if c then
+			return c
+		end
+		rawset(
+			self,
+			"cached_type",
+			t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2val(key).value))
+		)
+		return self.cached_type
+	end
 	local byond_str = t2t.str2val(key)
 	return rawget(meta, key) or t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, byond_str.value))
 end

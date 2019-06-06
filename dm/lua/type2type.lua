@@ -60,7 +60,7 @@ function M.toValue(value, refcount)
 			return value.handle
 		end
 	else
-		print("??? type: " .. a)
+		print("??? type: " .. t)
 	end
 end
 

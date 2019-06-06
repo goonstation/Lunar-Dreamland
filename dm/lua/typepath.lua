@@ -36,7 +36,8 @@ function add_type_entry(i, entry)
 			type = entry,
 			path = t2t.idx2str(entry.path),
 			parentType = entry.parentTypeIdx,
-			typeName = t2t.idx2str(entry.last_typepath_part)
+			typeName = t2t.idx2str(entry.last_typepath_part),
+			parentCache = {}
 		},
 		meta
 	)
@@ -49,6 +50,7 @@ for i = 0, 0xFFFFFF do
 	if entry ~= ffi.null then
 		add_type_entry(i, entry)
 	else
+		print("Indexed " .. tostring(i) .. " types.")
 		break
 	end
 end
@@ -62,6 +64,15 @@ for k, v in ipairs(M.typecache.types) do
 		M.typecache.types[k].parentType = parent
 		M.typecache.types[v.path].parentType = parent
 	end
+end
+
+for k, v in ipairs(M.typecache.types) do
+	orig_type = v
+	repeat
+		orig_type.parentCache[v.parentType] = 1
+		v = v.parentType
+	until v.parentType == v
+	M.typecache.types[orig_type.path].parentCache = orig_type.parentCache
 end
 
 for i = 0, 0xFFFFFF do
@@ -78,7 +89,8 @@ function M.T(typepath)
 end
 
 function M.istype(thingy, wtype)
-	thingy_type = thingy.type
+	return thingy.type.parentCache[wtype]
+	--[[thingy_type = thingy.type -- time-memory tradeoff here
 	if thingy_type == wtype then
 		return true
 	end
@@ -88,7 +100,7 @@ function M.istype(thingy, wtype)
 			return true
 		end
 	until thingy_type.parentType == thingy_type
-	return false
+	return false]]
 end
 
 return M
