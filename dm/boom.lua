@@ -37,10 +37,11 @@ proc.getProc("/client/proc/list_stuff"):hook(
 proc.getProc("/client/proc/typetest"):hook(
 	function(original, usr, src, d, m, o)
 		local start_time = os.clock()
-		for i = 1, 100000 do
-			byond.istype(d, T "/datum")
+		local bench
+		for i = 1, 10000000 do
+			bench = byond.istype(d, T "/datum")
 		end
-		print("Microseconds per istype: ", (os.clock() - start_time) * 10)
+		print("Time taken: ", os.clock() - start_time)
 		print("istype(datum, /datum/type/testing/datum): ", byond.istype(d, T "/datum/type/testing/datum"))
 		print("istype(datum, /datum/type): ", byond.istype(d, T "/datum/type"))
 		print("istype(datum, /datum): ", byond.istype(d, T "/datum"))

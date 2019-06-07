@@ -1,3 +1,5 @@
+/world
+	loop_checks = 0
 /client
 	var/list/listvar = list(1, "test")
 /client/verb/initDLL()
@@ -37,7 +39,7 @@
 /client/verb/istypespeed()
 	var/mob/type/testing/mob/mtest/M = new
 	var/x
-	for(var/i=1 to 100000)
+	for(var/i=1 to 10000000)
 		x = istype(M, /datum)
 	return x
 /datum/type/testing/datum/dtest
