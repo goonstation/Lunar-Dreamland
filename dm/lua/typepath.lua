@@ -12,7 +12,9 @@ end
 
 for k, v in pairs {
 	consts.ObjType,
-	consts.DatumType
+	consts.DatumType,
+	0x0A, --todo, give names
+	0x0B
 } do
 	t2t.luaHandlers[v] = function(val)
 		return M.typecache.types[val.value]

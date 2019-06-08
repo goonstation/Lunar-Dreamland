@@ -52,6 +52,8 @@ function M.toValue(value, refcount)
 		end
 	elseif t == "number" then
 		return ffi.new("Value", {type = consts.Number, valuef = value})
+	elseif t == "boolean" then
+		return ffi.new("Value", {type = consts.Number, valuef = value and 1 or 0})
 	elseif t == "nil" then
 		return consts.null
 	elseif t == "table" then

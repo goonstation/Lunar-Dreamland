@@ -29,6 +29,7 @@ M.List = 0x0F
 M.Datum = 0x21
 M.Path = 0x26
 M.Number = 0x2A
+M.MobVars = 0x2C
 M.ConstList = 0x53 --Might be a read-only or a fixed size list (cannot append)
 --On a second look this seems to be some kind of invalid type, perhaps for debugging purposes
 
@@ -55,6 +56,7 @@ M.types = {
 	[0x21] = "Datum",
 	[0x26] = "Path",
 	[0x2A] = "Number",
+	[0x2C] = "MobVars",
 	[0x3B] = "ClientType",
 	[0x53] = "ConstList",
 	["Null"] = 0x00,
@@ -79,6 +81,7 @@ M.types = {
 	["Datum"] = 0x21,
 	["Path"] = 0x26,
 	["Number"] = 0x2A,
+	["MobVars"] = 0x2C,
 	["ClientType"] = 0x3B,
 	["ConstList"] = 0x53
 }

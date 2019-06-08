@@ -21,6 +21,10 @@ function meta:__index(acc)
 	if x then
 		return x
 	end
+	if type(acc) == "string" then
+		local s = t2t.toValue(acc)
+		return t2t.toLua(signatures.GetAssocElement(consts.List, self.handle.value, s.type, s.value))
+	end
 	if (acc >= 1 and acc - 1 < self.internal_list.length) then
 		return t2t.toLua(self.internal_list.elements[acc - 1])
 	else
@@ -29,7 +33,12 @@ function meta:__index(acc)
 end
 
 function meta:__newindex(index, newval)
-	index = tonumber(index) or error("List index must be a number.")
+	if type(index) == "string" then
+		local s = t2t.toValue(index)
+		local n = t2t.toValue(newval)
+		signatures.SetAssocElement(consts.List, self.handle.value, s.type, s.value, n.type, n.value)
+		return
+	end
 	if (index >= 1 and index - 1 < self.length) then
 		self.internal_list.elements[index - 1] = t2t.toValue(newval)
 	end

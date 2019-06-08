@@ -44,12 +44,18 @@
 	return x
 /datum/type/testing/datum/dtest
 /mob/type/testing/mob/mtest
+	name = "mobtest"
+	var/notbuiltinvar = 1
+	var/list/asdf = list("ayy" = "lmao")
 /obj/type/testing/obj/otest
 /client/verb/test_types()
 	var/datum/type/testing/datum/dtest/D = new
 	var/mob/type/testing/mob/mtest/M = new
 	var/obj/type/testing/obj/otest/O = new
 	typetest(D, M, O)
+/client/verb/dynamic_vars()
+	var/mob/type/testing/mob/mtest/M = new
+	world << M.asdf["ayy"]
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	//dud
 var/global/cats=1

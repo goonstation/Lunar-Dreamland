@@ -60,7 +60,15 @@ for i = 0, 0xFFFFFF do
 end
 
 function M.getProc(path)
-	return typecache.procs[path]
+	local ret = typecache.procs[path]
+	if not ret then
+		print("ERROR: " .. path .. " is not a valid proc!")
+		return {
+			hook = function()
+			end
+		}
+	end
+	return ret
 end
 
 M.callGlobalProcHook =
@@ -77,7 +85,7 @@ M.callGlobalProcHook =
 			local luad = {}
 			for i = 1, tonumber(argc) do
 				luad[i] = t2t.toLua(argv[i - 1])
-			 --dont skip arguments if they fail conversion
+				--dont skip arguments if they fail conversion
 			end
 			return t2t.toValue(
 				M.procHooks[tonumber(procid)](

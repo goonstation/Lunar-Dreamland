@@ -16,6 +16,8 @@ typedef String*(*GetStringTableIndexPtr)(int stringId);
 typedef unsigned int(*Path2TextPtr)(unsigned int pathType, unsigned int pathValue);
 typedef Type*(*GetTypeTableIndexPtr)(unsigned int typeIndex);
 typedef unsigned int*(*MobTableIndexToGlobalTableIndex)(unsigned int mobTypeIndex);
+typedef Value(*GetAssocElement)(unsigned int listType, unsigned int listId, unsigned int keyType, unsigned int keyValue);
+typedef void(*SetAssocElement)(unsigned int listType, unsigned int listId, unsigned int keyType, unsigned int keyValue, unsigned int valueType, unsigned int valueValue);
 ]]
 
 return require("signatures." .. (jit.os):lower())

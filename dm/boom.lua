@@ -36,10 +36,14 @@ proc.getProc("/client/proc/list_stuff"):hook(
 )
 proc.getProc("/client/proc/typetest"):hook(
 	function(original, usr, src, d, m, o)
+		print(m.asdf["ayy"])
+		m.asdf["ayy"] = "not lmao"
+		print(m.asdf["ayy"])
+		print(m.vars)
 		local start_time = os.clock()
 		local bench
 		for i = 1, 10000000 do
-			bench = byond.istype(d, T "/datum")
+			bench = byond.istype(d, T "/mob")
 		end
 		print("Time taken: ", os.clock() - start_time)
 		print("istype(datum, /datum/type/testing/datum): ", byond.istype(d, T "/datum/type/testing/datum"))

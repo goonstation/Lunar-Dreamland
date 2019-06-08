@@ -76,4 +76,14 @@ sigscan(
 	"MobTableIndexToGlobalTableIndex",
 	"55 8B EC 8B 45 08 3B 05 ?? ?? ?? ?? 72 04 33 C0 5D C3 C1 E0 04 03 05 ?? ?? ?? ?? 5D C3"
 )
+sigscan(
+	"GetAssocElement",
+	"GetAssocElement",
+	"55 8B EC 51 8B 4D 08 C6 45 FF 00 80 F9 05 76 11 80 F9 21 74 10 80 F9 0D 74 0B 80 F9 0E 75 65 EB 04 84 C9 74 5F"
+)
+sigscan(
+	"SetAssocElement",
+	"SetAssocElement",
+	"55 8B EC 83 EC 14 8B 4D 08 C6 45 FF 00 80 F9 05 76 15 80 F9 21 74 14 80 F9 0D 74 0F 80 F9 0E 0F 85 80 00 00 00 EB 04 84 C9 74 7A 6A 00 8D 45 FF 50 FF 75 0C 51 6A 00 6A 7C"
+)
 return ret
