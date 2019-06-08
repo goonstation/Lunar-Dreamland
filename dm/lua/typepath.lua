@@ -91,7 +91,7 @@ function M.T(typepath)
 end
 
 function M.istype(thingy, wtype)
-	return thingy.type.parentCache[wtype]
+	return thingy.type.parentCache[wtype] and true or false
 	--[[thingy_type = thingy.type -- time-memory tradeoff here
 	if thingy_type == wtype then
 		return true

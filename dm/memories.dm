@@ -56,6 +56,9 @@
 /client/verb/dynamic_vars()
 	var/mob/type/testing/mob/mtest/M = new
 	world << M.asdf["ayy"]
+/client/verb/anewlist()
+	world.log << src.key
+	var/list/yep = list(1, 2, 3)
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	//dud
 var/global/cats=1

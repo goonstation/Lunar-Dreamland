@@ -60,6 +60,31 @@ function M.toValue(value, refcount)
 		local mt = getmetatable(value)
 		if mt == require "datum".type or mt == require "list".type then
 			return value.handle
+		elseif not mt then
+			local function ilen(t)
+				local i = 0
+				for _ in pairs(t) do
+					i = i + 1
+					if t[i] == nil then
+						return 0
+					end
+				end
+				return i
+			end
+
+			local list_id = signatures.CreateList(ilen(value))
+			local newlist =
+				setmetatable(
+				{
+					internal_list = signatures.GetListArrayEntry(list_id),
+					handle = ffi.new("Value", {type = consts.List, value = list_id})
+				},
+				require "list".type
+			)
+			for k, v in pairs(value) do
+				newlist[k] = v
+			end
+			return M.toValue(newlist)
 		end
 	else
 		print("??? type: " .. t)

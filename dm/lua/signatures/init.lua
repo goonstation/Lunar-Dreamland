@@ -18,6 +18,7 @@ typedef Type*(*GetTypeTableIndexPtr)(unsigned int typeIndex);
 typedef unsigned int*(*MobTableIndexToGlobalTableIndex)(unsigned int mobTypeIndex);
 typedef Value(*GetAssocElement)(unsigned int listType, unsigned int listId, unsigned int keyType, unsigned int keyValue);
 typedef void(*SetAssocElement)(unsigned int listType, unsigned int listId, unsigned int keyType, unsigned int keyValue, unsigned int valueType, unsigned int valueValue);
+typedef unsigned int(*CreateList)(unsigned int reserveSize);
 ]]
 
 return require("signatures." .. (jit.os):lower())

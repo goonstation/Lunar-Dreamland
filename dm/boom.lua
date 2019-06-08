@@ -36,10 +36,13 @@ proc.getProc("/client/proc/list_stuff"):hook(
 )
 proc.getProc("/client/proc/typetest"):hook(
 	function(original, usr, src, d, m, o)
-		print(m.asdf["ayy"])
+		print("Intial ayy:", m.asdf["ayy"])
 		m.asdf["ayy"] = "not lmao"
-		print(m.asdf["ayy"])
-		print(m.vars)
+		m.asdf["nonexistent"] = "or is it?"
+		print("Modified ayy:", m.asdf["ayy"])
+		print("Formerly nonexistent:", m.asdf["nonexistent"])
+		m.asdf = {1, "second", "3th", 4}
+		print("Set:", m.asdf[1], m.asdf[2], m.asdf[3], m.asdf[4])
 		local start_time = os.clock()
 		local bench
 		for i = 1, 10000000 do
