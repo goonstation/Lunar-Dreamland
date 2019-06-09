@@ -29,6 +29,11 @@
 	//hook
 /client/verb/do_list_stuff()
 	list_stuff()
+/datum/access_test
+	var/name = "xd"
+var/datum/access_test/test
+/client/verb/access_datum_var()
+	world << test.name
 /client/verb/print_list()
 	for(var/e in listvar)
 		world << e
@@ -51,7 +56,7 @@
 /client/verb/test_types()
 	var/datum/type/testing/datum/dtest/D = new
 	var/mob/type/testing/mob/mtest/M = new
-	var/obj/type/testing/obj/otest/O = new
+	var/obj/type/testing/obj/otest/O = new(M, 1, 2, 3)
 	typetest(D, M, O)
 /client/verb/dynamic_vars()
 	var/mob/type/testing/mob/mtest/M = new
@@ -65,6 +70,7 @@ var/global/cats=1
 var/init_res = ""
 /world/New()
 	..()
+	test = new
 	init_res += call("hookerino.dll","BHOOK_Init")()
 	init_res += call("hookerino.dll", "BHOOK_RunLua")("dofile'boom.lua'")
 /client/New()

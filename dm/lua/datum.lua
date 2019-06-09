@@ -107,6 +107,21 @@ function M.fromValue(val)
 	return setmetatable({handle = val}, meta)
 end
 
+function byond.new(path, ...)
+	local args = {...}
+	local argv = {}
+	for i = 1, #args do
+		local v = t2t.toValue(args[i], true)
+		if v then
+			table.insert(argv, v)
+		end
+	end
+	local vals = ffi.new("Value[" .. #argv .. "]", argv)
+	local b_path = t2t.toValue(path)
+	signatures.New(b_path, vals, #argv, 0)
+	return t2t.toLua(b_path)
+end
+
 for k, v in pairs {
 	consts.Datum,
 	consts.Turf,

@@ -59,6 +59,11 @@ proc.getProc("/client/proc/typetest"):hook(
 		print("Datum parent type:", d.type.parentType.path)
 		print("Mob parent type:", m.type.parentType.path)
 		print("Obj parent type:", o.type.parentType.path)
+
+		local newthing = byond.new("/mob/type/testing/mob/mtest", m)
+		print("New mob name:", newthing.name)
+		print("New mob type:", newthing.type.path)
+		print("New mob loc:", newthing.loc, newthing.loc.name)
 	end
 )
 
