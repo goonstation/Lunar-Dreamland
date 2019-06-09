@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local ret = {}
-local function sigscan(name, type, signature)
-	local scanned = hook.sigscan("byondcore.dll", signature)
+local function sigscan(name, type, signature, module)
+	local scanned = hook.sigscan(module or "byondcore.dll", signature)
 	if not scanned or scanned == 0 then
 		print("Sigscan failed: " .. name)
 		error("Signature not found: " .. scanned)

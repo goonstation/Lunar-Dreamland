@@ -20,12 +20,11 @@ function meta:__index(key)
 		rawset(
 			self,
 			"cached_type",
-			t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2val(key).value))
+			t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2index(key)))
 		)
 		return self.cached_type
 	end
-	local byond_str = t2t.str2val(key)
-	return rawget(meta, key) or t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, byond_str.value))
+	return rawget(meta, key) or t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2index(key)))
 end
 
 --[[function meta:__index(key) --WIP, requires being able to catch exceptions
@@ -51,7 +50,7 @@ function meta:__newindex(key, val)
 		return
 	end
 	local converted = t2t.toValue(val, true) or M.null
-	signatures.SetVariable(self.handle.type, self.handle.value, t2t.str2val(key).value, converted.type, converted.value)
+	signatures.SetVariable(self.handle.type, self.handle.value, t2t.str2index(key), converted.type, converted.value)
 end
 
 function meta:invoke(procName, ...)
@@ -73,7 +72,7 @@ function meta:invoke(procName, ...)
 			0,
 			0,
 			2,
-			t2t.str2val(procName).value,
+			t2t.str2index(procName),
 			self.handle.type,
 			self.handle.value,
 			vals,
@@ -105,6 +104,10 @@ end
 
 function M.fromValue(val)
 	return setmetatable({handle = val}, meta)
+end
+
+function meta:istype(wtype)
+	return self.type.parentCache[wtype] and true or false
 end
 
 function byond.new(path, ...)

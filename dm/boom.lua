@@ -36,7 +36,7 @@ proc.getProc("/client/proc/list_stuff"):hook(
 )
 proc.getProc("/client/proc/typetest"):hook(
 	function(original, usr, src, d, m, o)
-		print("Intial ayy:", m.asdf["ayy"])
+		--[[print("Intial ayy:", m.asdf["ayy"])
 		m.asdf["ayy"] = "not lmao"
 		m.asdf["nonexistent"] = "or is it?"
 		print("Modified ayy:", m.asdf["ayy"])
@@ -48,7 +48,18 @@ proc.getProc("/client/proc/typetest"):hook(
 		for i = 1, 10000000 do
 			bench = byond.istype(d, T "/mob")
 		end
-		print("Time taken: ", os.clock() - start_time)
+		print("Time taken to istype 1 million times: ", os.clock() - start_time)]]
+		local bench
+		start_time = os.clock()
+		for i = 1, 100000 do
+			bench = m.notbuiltinvar
+		end
+		print("Time taken to get var 100,000 times: ", os.clock() - start_time)
+		--[[start_time = os.clock()
+		for i = 1, 100000 do
+			m.notbuiltinvar = 2
+		end
+		print("Time taken to set var 100,000 times: ", os.clock() - start_time)
 		print("istype(datum, /datum/type/testing/datum): ", byond.istype(d, T "/datum/type/testing/datum"))
 		print("istype(datum, /datum/type): ", byond.istype(d, T "/datum/type"))
 		print("istype(datum, /datum): ", byond.istype(d, T "/datum"))
@@ -63,7 +74,7 @@ proc.getProc("/client/proc/typetest"):hook(
 		local newthing = byond.new("/mob/type/testing/mob/mtest", m)
 		print("New mob name:", newthing.name)
 		print("New mob type:", newthing.type.path)
-		print("New mob loc:", newthing.loc, newthing.loc.name)
+		print("New mob loc:", newthing.loc, newthing.loc.name)]]
 	end
 )
 

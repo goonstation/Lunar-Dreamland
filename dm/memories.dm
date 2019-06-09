@@ -47,6 +47,21 @@ var/datum/access_test/test
 	for(var/i=1 to 10000000)
 		x = istype(M, /datum)
 	return x
+/client/verb/var_speed_test()
+	var/mob/type/testing/mob/mtest/M = new
+	read_test(M)
+	set_test(M)
+/client/proc/read_test(mob/M)
+	var/dong
+	var/xd = input("name of var")
+	for(var/i=1 to 100000)
+		dong = M.vars[xd]
+	world << dong
+	world << "done"
+/client/proc/set_test(mob/M)
+	for(var/i=1 to 100000)
+		M:notbuiltinvar = 2
+	world << "done"
 /datum/type/testing/datum/dtest
 /mob/type/testing/mob/mtest
 	name = "mobtest"

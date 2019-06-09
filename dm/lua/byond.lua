@@ -30,10 +30,10 @@ function M.hook(fn, callback, cbType, errRet) --print('hooking thing', fn)do ret
 		end
 		return err
 	end
-	jit.off(uCB)
+	--jit.off(uCB)
 
 	entry.cb = ffi.cast(cbType, uCB)
-	jit.off(callback)
+	--jit.off(callback)
 
 	local hook = hook.create(ptr(fn), ptr(entry.cb))
 	local tramp = hook:hook()
