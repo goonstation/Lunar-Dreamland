@@ -53,9 +53,8 @@ var/datum/access_test/test
 	set_test(M)
 /client/proc/read_test(mob/M)
 	var/dong
-	var/xd = input("name of var")
 	for(var/i=1 to 100000)
-		dong = M.vars[xd]
+		dong = M:notbuiltinvar
 	world << dong
 	world << "done"
 /client/proc/set_test(mob/M)

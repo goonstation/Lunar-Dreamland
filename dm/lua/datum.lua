@@ -17,40 +17,18 @@ function meta:__index(key)
 		if c then
 			return c
 		end
-		rawset(
-			self,
-			"cached_type",
-			t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2index(key)))
-		)
+		rawset(self, "cached_type", t2t.toLua(signatures.GetVariable(self.handle, t2t.str2index(key))))
 		return self.cached_type
 	end
-	return rawget(meta, key) or t2t.toLua(signatures.GetVariable(self.handle.type, self.handle.value, t2t.str2index(key)))
+	return rawget(meta, key) or t2t.toLua(signatures.GetVariable(self.handle, t2t.str2index(key)))
 end
 
---[[function meta:__index(key) --WIP, requires being able to catch exceptions
-	local byond_str = t2t.str2val(key)
-	local val = signatures.GetVariable( self.handle.type, self.handle.value, byond_str.value)
-	if val == some magic bullshit then
-		return function( procName, ... )
-			procName:gsub("_", " ")
-			local args = {...}
-			local argv = {}
-			for i = 1, #args do
-				local v = t2t.toValue(args[i], true)
-				if v then table.insert(argv, v) end
-			end
-			local vals = ffi.new('Value[' .. #argv .. ']', argv)
-			return t2t.toLua(signatures.CallProc( 0, 0, 2, t2t.str2val(procName).value, self.handle.type, self.handle.value, vals, #argv, 0, 0 ))
-		end
-	end
-	return rawget(meta, key) or t2t.toLua(val)
-end]]
 function meta:__newindex(key, val)
 	if key == "type" then
 		return
 	end
 	local converted = t2t.toValue(val, true) or M.null
-	signatures.SetVariable(self.handle.type, self.handle.value, t2t.str2index(key), converted.type, converted.value)
+	signatures.SetVariable(self.handle, t2t.str2index(key), converted)
 end
 
 function meta:invoke(procName, ...)

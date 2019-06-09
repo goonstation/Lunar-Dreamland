@@ -10,14 +10,18 @@ end
 function M.str2val(str)
 	local cached = const_strings[str]
 	if cached then
-		return ffi.new("Value", {type = consts.String, value = cached})
+		return cached
 	end
 	local idx = signatures.GetStringTableIndex(str, 0, 1)
 	return ffi.new("Value", {type = consts.String, value = idx})
 end
 
 function M.str2index(str)
-	return const_strings[str] or signatures.GetStringTableIndex(str, 0, 1)
+	local cached = const_strings[str]
+	if cached then
+		return cached.value
+	end
+	return signatures.GetStringTableIndex(str, 0, 1)
 end
 
 M.luaHandlers = {
@@ -50,16 +54,15 @@ end
 function M.toValue(value, refcount)
 	local t = type(value)
 	if t == "string" then --NYI: port to table accessors
+		local cached = const_strings[str]
+		if cached then
+			return cached
+		end
 		if refcount then
-			local cached = const_strings[str]
-			if cached then
-				return ffi.new("Value", {type = consts.String, value = cached})
-			else
-				idx = signatures.GetStringTableIndex(value, 0, 1)
-				ref = signatures.GetStringTableIndexPtr(idx)
-				ref.refcount = ref.refcount + 1
-				return ffi.new("Value", {type = consts.String, value = idx})
-			end
+			idx = signatures.GetStringTableIndex(value, 0, 1)
+			ref = signatures.GetStringTableIndexPtr(idx)
+			ref.refcount = ref.refcount + 1
+			return ffi.new("Value", {type = consts.String, value = idx})
 		else
 			return ffi.new("Value", {type = consts.String, value = signatures.GetStringTableIndex(value, 0, 1)})
 		end
@@ -111,8 +114,8 @@ local i = 0
 local string_id = 1
 while true do
 	if current_char[i] == 0 then
-		const_strings[current_string] = string_id
-		const_strings[string_id] = current_string
+		const_strings[current_string] = ffi.new("Value", {type = consts.String, value = string_id})
+		const_strings[string_id] = const_strings[current_string]
 		if tonumber(current_char[i + 1]) <= 0 then
 			break
 		else
@@ -127,7 +130,7 @@ while true do
 	end
 	i = i + 1
 end
-print(const_strings[1])
+
 local strcache = {}
 function M.idx2str(index)
 	if index == 0xFFFF then
