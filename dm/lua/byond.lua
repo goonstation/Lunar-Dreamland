@@ -30,10 +30,10 @@ function M.hook(fn, callback, cbType, errRet) --print('hooking thing', fn)do ret
 		end
 		return err
 	end
-	--jit.off(uCB)
+	jit.off(uCB)
 
 	entry.cb = ffi.cast(cbType, uCB)
-	--jit.off(callback)
+	jit.off(callback)
 
 	local hook = hook.create(ptr(fn), ptr(entry.cb))
 	local tramp = hook:hook()
@@ -49,4 +49,35 @@ function M.hook(fn, callback, cbType, errRet) --print('hooking thing', fn)do ret
 end
 
 M.ptr = ptr
+
+--[[M.breakpointHook =
+	M.hook(
+	signatures.TempBreakpoint,
+	function()
+		print("Breakpoint hook running!")
+	end,
+	"void(*)()",
+	nil
+)]]
+M.crashHook =
+	M.hook(
+	signatures.CrashProc,
+	function(original, err, arg)
+		if arg == 0xFFFF then
+			M.on_breakpoint()
+		else
+			original(err, arg)
+		end
+	end,
+	"void(*)(char*, int)",
+	nil
+)
+
+function M.on_breakpoint()
+end
+
+function M.set_breakpoint_func(fn)
+	M.on_breakpoint = fn
+end
+
 return M

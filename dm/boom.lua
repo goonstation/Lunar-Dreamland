@@ -15,9 +15,18 @@ local consts = require "defines"
 print "loading types"
 local types = require "typepath"
 
+local context = require "context"
+
 local T = byond.T
 
 print "hooking!"
+
+byond.set_breakpoint_func(
+	function()
+		print(context.get_instruction_pointer())
+	end
+)
+
 proc.getProc("/proc/conoutput"):hook(
 	function(original, msg)
 		print("Debug: " .. msg)
@@ -49,12 +58,14 @@ proc.getProc("/client/proc/typetest"):hook(
 			bench = byond.istype(d, T "/mob")
 		end
 		print("Time taken to istype 1 million times: ", os.clock() - start_time)]]
-		local bench
+		--[[local bench
 		start_time = os.clock()
+		local getvar = signatures.GetVariable
+		local handle = m.handle
 		for i = 1, 100000 do
-			bench = m.notbuiltinvar
+			getvar(handle, 0x27)
 		end
-		print("Time taken to get var 100,000 times: ", os.clock() - start_time)
+		print("Time taken to get var 100,000 times: ", os.clock() - start_time)]]
 		--[[start_time = os.clock()
 		for i = 1, 100000 do
 			m.notbuiltinvar = 2
@@ -75,6 +86,11 @@ proc.getProc("/client/proc/typetest"):hook(
 		print("New mob name:", newthing.name)
 		print("New mob type:", newthing.type.path)
 		print("New mob loc:", newthing.loc, newthing.loc.name)]]
+	end
+)
+proc.getProc("/client/verb/context_test"):hook(
+	function(original, usr, src)
+		print(context.get_context().proc_state)
 	end
 )
 

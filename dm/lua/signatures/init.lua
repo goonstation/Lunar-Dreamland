@@ -20,6 +20,8 @@ typedef Value(*GetAssocElement)(unsigned int listType, unsigned int listId, unsi
 typedef void(*SetAssocElement)(unsigned int listType, unsigned int listId, unsigned int keyType, unsigned int keyValue, unsigned int valueType, unsigned int valueValue);
 typedef unsigned int(*CreateList)(unsigned int reserveSize);
 typedef Value(*New)(Value* type, Value* args, unsigned int num_args, int unknown);
+typedef void(*TempBreakpoint)();
+typedef void(*CrashProc)(char* error, int argument);
 ]]
 
 return require("signatures." .. (jit.os):lower())

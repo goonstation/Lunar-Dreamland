@@ -50,12 +50,12 @@ var/datum/access_test/test
 /client/verb/var_speed_test()
 	var/mob/type/testing/mob/mtest/M = new
 	read_test(M)
-	set_test(M)
+	//set_test(M)
 /client/proc/read_test(mob/M)
 	var/dong
 	for(var/i=1 to 100000)
 		dong = M:notbuiltinvar
-	world << dong
+	//world << dong
 	world << "done"
 /client/proc/set_test(mob/M)
 	for(var/i=1 to 100000)
@@ -76,10 +76,17 @@ var/datum/access_test/test
 	var/mob/type/testing/mob/mtest/M = new
 	world << M.asdf["ayy"]
 /client/verb/anewlist()
-	world.log << src.key
 	var/list/yep = list(1, 2, 3)
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	//dud
+/client/verb/happy_proc()
+	return 5
+/client/proc/ct()
+	var/local_1 = 1
+	var/local_2 = 2
+	return local_1 + local_2
+/client/verb/context_test()
+	return ct()
 var/global/cats=1
 var/init_res = ""
 /world/New()
