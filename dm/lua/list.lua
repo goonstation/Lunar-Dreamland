@@ -13,6 +13,15 @@ function meta:__len()
 	return self.internal_list.length
 end
 
+function meta:__tostring()
+	local vals = {}
+	for i = 1, self.length do
+		table.insert(vals, self[i])
+	end
+	vals = table.concat(vals, ",")
+	return "list(" .. vals .. ")"
+end
+
 function meta:__index(acc)
 	if acc == "length" then
 		return self.internal_list.length

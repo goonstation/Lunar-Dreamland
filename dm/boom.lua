@@ -23,7 +23,13 @@ print "hooking!"
 
 byond.set_breakpoint_func(
 	function()
-		print(context.get_instruction_pointer())
+		print("Debug breakpoint hit!")
+		print("Dumping local variables...")
+		c = context.get_context()
+		for i = 0, c.local_var_count - 1 do
+			print("Var " .. i .. ": ", t2t.toLua(c.local_variables[i]))
+		end
+		print("Resuming!")
 	end
 )
 
