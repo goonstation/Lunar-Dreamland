@@ -35,6 +35,36 @@ function procMeta:__call(...)
 	)
 end
 
+M.proc_setup_table_length = (signatures.AlmostTotalProcs + 1)[0]
+
+local setup_meta = {}
+
+function setup_meta.__newindex(self, key, val)
+	if key == "local_var_count" then
+		signatures.ProcSetupTable[self.__proc.proc.local_var_count_idx][0].local_var_count = val
+	elseif key == "bytecode" then
+		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode = val
+	end
+end
+
+function setup_meta.__index(self, key)
+	if key == "local_var_count" then
+		return signatures.ProcSetupTable[self.__proc.proc.local_var_count_idx][0].local_var_count
+	elseif key == "bytecode" then
+		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode
+	end
+end
+
+function M.getProcSetupInfo(path)
+	local proc = M.getProc(path)
+	return setmetatable(
+		{
+			__proc = proc
+		},
+		setup_meta
+	)
+end
+
 for i = 0, 0xFFFFFF do
 	local entry = signatures.GetProcArrayEntry(i)
 	if entry ~= ffi.null then
@@ -62,11 +92,7 @@ end
 function M.getProc(path)
 	local ret = typecache.procs[path]
 	if not ret then
-		print("ERROR: " .. path .. " is not a valid proc!")
-		return {
-			hook = function()
-			end
-		}
+		error("ERROR: " .. path .. " is not a valid proc!")
 	end
 	return ret
 end

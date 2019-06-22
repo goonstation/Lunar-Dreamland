@@ -19,15 +19,29 @@ local context = require "context"
 
 local T = byond.T
 
+local ffi = require "ffi"
 print "hooking!"
 
+--[[ new code:
+var/x = 1
+breakpoint
+return x
+]]
+local new_bytecode = {0x50, 0x01, 0x34, 0xFFDA, 0x00, 0x1337, 0x33, 0xFFDA, 0x00, 0x12}
+local new_varcount = 1 -- This will be supplied by the compiler
+local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
+
+local proc_to_recompile = proc.getProcSetupInfo("/client/verb/anewlist")
+
+proc_to_recompile.bytecode = cnew_bytecode
+proc_to_recompile.local_var_count = new_varcount
+
 byond.set_breakpoint_func(
-	function()
+	function(ctx)
 		print("Debug breakpoint hit!")
 		print("Dumping local variables...")
-		c = context.get_context()
-		for i = 0, c.local_var_count - 1 do
-			print("Var " .. i .. ": ", t2t.toLua(c.local_variables[i]))
+		for i = 0, ctx.local_var_count - 1 do
+			print("Var " .. i .. ": ", t2t.toLua(ctx.local_variables[i]))
 		end
 		print("Resuming!")
 	end

@@ -1,6 +1,7 @@
 local ffi = require("ffi")
 local type2type = require "type2type"
 local signatures = require "signatures"
+local context = require "context"
 local M = {}
 local getmetatable = getmetatable
 --local yolo = hook.sigscan("byondcore.dll", "?? ?? ?? ?? 8B F0 83 C4 04 85 F6 74 5F 0F B7 1E C1 E3 02 53 ")
@@ -63,8 +64,8 @@ M.crashHook =
 	M.hook(
 	signatures.CrashProc,
 	function(original, err, arg)
-		if arg == 0xFFFF then
-			M.on_breakpoint()
+		if arg == 0x1337 then
+			M.on_breakpoint(context.get_context())
 		else
 			original(err, arg)
 		end

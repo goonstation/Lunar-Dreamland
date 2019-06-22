@@ -34,8 +34,8 @@ typedef struct ProcArrayEntry {
 	int procCategory;
 	int procFlags;
 	int unknown1;
-	int bytecode; // ProcSetupEntry index
-	int num_of_vars; // ProcSetupEntry index 
+	int bytecode_idx; // ProcSetupEntry index
+	int local_var_count_idx; // ProcSetupEntry index 
 	int unknown2;
 } ProcArrayEntry;
 
