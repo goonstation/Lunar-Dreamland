@@ -17,6 +17,8 @@ local types = require "typepath"
 
 local context = require "context"
 
+local disasm = require "disassembler"
+
 local T = byond.T
 
 local ffi = require "ffi"
@@ -32,6 +34,8 @@ local new_varcount = 1 -- This will be supplied by the compiler
 local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
 
 local proc_to_recompile = proc.getProcSetupInfo("/client/verb/anewlist")
+
+disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 
 proc_to_recompile.bytecode = cnew_bytecode
 proc_to_recompile.local_var_count = new_varcount

@@ -52,6 +52,8 @@ function setup_meta.__index(self, key)
 		return signatures.ProcSetupTable[self.__proc.proc.local_var_count_idx][0].local_var_count
 	elseif key == "bytecode" then
 		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode
+	elseif key == "bytecode_len" then
+		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].local_var_count --if you look up the proc by bytecode index, the local_var_count holds the length of the bytecode
 	end
 end
 
