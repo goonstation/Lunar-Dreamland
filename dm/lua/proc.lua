@@ -44,6 +44,7 @@ function setup_meta.__newindex(self, key, val)
 		signatures.ProcSetupTable[self.__proc.proc.local_var_count_idx][0].local_var_count = val
 	elseif key == "bytecode" then
 		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode = val
+		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].local_var_count = ffi.sizeof(val) / 4 --assuming each opcode is 4 bytes
 	end
 end
 

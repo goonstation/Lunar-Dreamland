@@ -35,10 +35,15 @@ local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
 
 local proc_to_recompile = proc.getProcSetupInfo("/client/verb/anewlist")
 
+print("Original proc:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 
 proc_to_recompile.bytecode = cnew_bytecode
 proc_to_recompile.local_var_count = new_varcount
+
+print("")
+print("Recompiled:")
+disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 
 byond.set_breakpoint_func(
 	function(ctx)
