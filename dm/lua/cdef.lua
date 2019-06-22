@@ -72,9 +72,11 @@ typedef struct ExecutionContext {
 	int dbg_current_line;
 	int* bytecode;
 	int current_opcode;
-	char unknown1[16];
+	char unknown1[6];
+	bool paused;
+	char unknown2[9];
 	int test_flag;
-	char unknown2[12];
+	char unknown3[12];
 	Value* local_variables;
 	Value* stack;
 	short local_var_count;
@@ -83,7 +85,10 @@ typedef struct ExecutionContext {
 } ExecutionContext;
 
 typedef struct ProcSetupEntry {
-	int local_var_count; 
+	union {
+		int local_var_count; 
+		int bytecode_length;
+	};
 	int* bytecode;
 	int unknown;
 } ProcSetupEntry;

@@ -79,7 +79,10 @@ var/datum/access_test/test
 	var/numero = 5
 	var/stringy = "Hello, world!"
 	var/list/yep = list(1, 2, 3)
-
+/client/verb/spawntest()
+	spawn(10)
+		world << "spawned"
+	return 2
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	//dud
 /client/verb/happy_proc()
@@ -90,6 +93,9 @@ var/datum/access_test/test
 	return local_1 + local_2
 /client/verb/context_test()
 	return ct()
+/client/verb/other_file_test()
+	. = 5
+	return from_another_file()
 var/global/cats=1
 var/init_res = ""
 /world/New()

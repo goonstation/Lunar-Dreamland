@@ -44,7 +44,7 @@ function setup_meta.__newindex(self, key, val)
 		signatures.ProcSetupTable[self.__proc.proc.local_var_count_idx][0].local_var_count = val
 	elseif key == "bytecode" then
 		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode = val
-		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].local_var_count = ffi.sizeof(val) / 4 --assuming each opcode is 4 bytes
+		signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode_length = ffi.sizeof(val) / 4 --assuming each opcode is 4 bytes
 	end
 end
 
@@ -54,7 +54,7 @@ function setup_meta.__index(self, key)
 	elseif key == "bytecode" then
 		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode
 	elseif key == "bytecode_len" then
-		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].local_var_count --if you look up the proc by bytecode index, the local_var_count holds the length of the bytecode
+		return signatures.ProcSetupTable[self.__proc.proc.bytecode_idx][0].bytecode_length --if you look up the proc by bytecode index, the local_var_count holds the length of the bytecode
 	end
 end
 
@@ -86,6 +86,7 @@ for i = 0, 0xFFFFFF do
 		)
 		typecache.procs[i] = {id = i, proc = entry}
 		typecache.procs[built.path] = built
+		print(t2t.idx2str(entry.procPath), entry.unknown2)
 	else
 		print("Ran out of procs to hook")
 		break

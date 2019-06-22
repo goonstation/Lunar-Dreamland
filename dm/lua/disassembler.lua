@@ -3,6 +3,7 @@ local M = {}
 local xvar_magic_numbers = {
 	[0xFFCE] = "SRC",
 	[0xFFD0] = "DOT",
+	[0xFFD9] = "ARG",
 	[0xFFDA] = "LOCAL",
 	[0xFFDB] = "GLOBAL",
 	[0xFFDC] = "DATUM",
@@ -19,6 +20,7 @@ local mnemonics = {
 	[0x11] = "JMPF", --jump if test flag is false
 	[0x12] = "RET", --return value
 	[0x1A] = "NLIST", --create new list
+	[0x25] = "SPAWN", --pop value from stack and create "thread" after that many deciseconds, jump ahead arg1 opcodes and continue
 	[0x30] = "CALL", --call proc by id
 	[0x33] = "GETVAR", --get variable by id and push
 	[0x34] = "SETVAR", --pop and set variable by id
@@ -32,6 +34,7 @@ local mnemonics = {
 	[0x3F] = "SUB", --subtract two values
 	[0x50] = "PUSHI", --push integer
 	[0x51] = "DECREF", --decrement value refcount
+	[0x5B] = "LOCATE",
 	[0x60] = "PUSHVAL", --push value
 	[0x84] = "DBG PROCNAME", --set context proc name field (debug mode only)
 	[0x85] = "DBG LINENO", --set context line number (debug mode only)
@@ -49,14 +52,17 @@ local arg_counts = {
 	[0x01] = 1,
 	[0x11] = 1,
 	[0x1A] = 1,
+	[0x25] = 1,
 	[0x30] = 3,
 	[0x50] = 1,
+	[0x5B] = 1,
 	[0x84] = 1,
 	[0x85] = 1
 }
 
 function disassemble_set_get(bytecode, offset)
 	local gettype = xvar_magic_numbers[bytecode[offset + 1]]
+	local arg_len
 	local arg_prettyprint
 	if gettype == "LOCAL" then
 		arg_len = 2

@@ -14,6 +14,7 @@
 // END_PREFERENCES
 
 // BEGIN_INCLUDE
+#include "another_file.dm"
 #include "memories.dm"
 // END_INCLUDE
 
