@@ -9,6 +9,7 @@ local xvar_magic_numbers = {
 	[0xFFDA] = "LOCAL",
 	[0xFFDB] = "GLOBAL",
 	[0xFFDC] = "DATUM",
+	[0xFFDD] = "CACHE",
 	[0xFFE5] = "WORLD",
 	[0xFFE6] = "NULL"
 }
@@ -23,8 +24,8 @@ local mnemonics = {
 	[0x12] = "RET", --return value
 	[0x1A] = "NLIST", --create new list
 	[0x25] = "SPAWN", --pop value from stack and create "thread" after that many deciseconds, jump ahead arg1 opcodes and continue
-	[0x2A] = "LISTPROC", --decref variables?
-	[0x30] = "CALL", --call proc by id
+	[0x2A] = "CALLDATUM", --decref variables?
+	[0x30] = "CALLGLOB", --call proc by id
 	[0x33] = "GETVAR", --get variable by id and push
 	[0x34] = "SETVAR", --pop and set variable by id
 	[0x37] = "TEQ", --test equal
@@ -73,7 +74,7 @@ local arg_counts = {
 	[0xFB] = 1
 }
 
-function disassemble_procname(bytecode, offset)
+function disassemble_procfile(bytecode, offset)
 	return "", 1, {bytecode[offset + 1], "(" .. t2t.idx2str(bytecode[offset + 1]) .. ")"}
 end
 
@@ -108,7 +109,23 @@ function disassemble_pushval(bytecode, offset)
 	return consts.types[type]:upper(), arg_len, {bytecode[offset + 2]}
 end
 
+function disassemble_datumcall(bytecode, offset)
+	local srcsource = xvar_magic_numbers[bytecode[offset + 1]]
+	if srcsource == "DATUM" then
+		return "", 6, {
+			xvar_magic_numbers[bytecode[offset + 2]],
+			bytecode[offset + 3],
+			bytecode[offset + 5],
+			bytecode[offset + 6],
+			"(" .. t2t.idx2str(bytecode[offset + 5]) .. ")"
+		}
+	elseif srcsource == "CACHE" then
+		return srcsource, 3, {bytecode[offset + 2], bytecode[offset + 3], "(" .. t2t.idx2str(bytecode[offset + 2]) .. ")"}
+	end
+end
+
 local variable_argcount_disassemblers = {
+	[0x2A] = disassemble_datumcall,
 	[0x33] = disassemble_var_access,
 	[0x34] = disassemble_var_access,
 	[0x60] = disassemble_pushval,
@@ -116,7 +133,7 @@ local variable_argcount_disassemblers = {
 	[0x67] = disassemble_var_access,
 	[0x45] = disassemble_var_access,
 	[0x46] = disassemble_var_access,
-	[0x84] = disassemble_procname
+	[0x84] = disassemble_procfile
 }
 
 function M.test_disassemble()
@@ -138,7 +155,12 @@ function M.disassemble(bytecode, bytecode_len)
 		local vararg_dis = variable_argcount_disassemblers[current_opcode]
 		if vararg_dis then
 			mnemonic_mod, arg_count, pretty_args = vararg_dis(bytecode, current_offset)
-			local out = {current_offset, "|", mnemonic, mnemonic_mod, table.concat(pretty_args or {}, " ")}
+			local out
+			if mnemonic_mod ~= "" then
+				out = {current_offset, "|", mnemonic, mnemonic_mod, table.concat(pretty_args or {}, " ")}
+			else
+				out = {current_offset, "|", mnemonic, table.concat(pretty_args or {}, " ")}
+			end
 			print(table.concat(out, " "))
 			current_offset = current_offset + arg_count
 		else

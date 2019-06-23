@@ -45,7 +45,7 @@ print("")
 print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
-local p = proc.getProcSetupInfo("/client/verb/read_list")
+local p = proc.getProcSetupInfo("/client/verb/test_proccall")
 disasm.disassemble(p.bytecode, p.bytecode_len)
 
 byond.set_breakpoint_func(

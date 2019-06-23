@@ -67,6 +67,17 @@ var/datum/access_test/test
 	var/notbuiltinvar = 1
 	var/list/asdf = list("ayy" = "lmao")
 /obj/type/testing/obj/otest
+
+/obj/type/testing/obj/otest/proc/obj_proc()
+	world << "obj proc!"
+/obj/type/testing/obj/otest/proc/obj_proc2()
+	world << "obj proc!"
+/client/verb/test_proccall()
+	var/obj/type/testing/obj/otest/O = new
+	O.obj_proc()
+	O.obj_proc2()
+	var/obj/type/testing/obj/otest/O2 = new
+	O2.obj_proc(1, 2, 3)
 /client/verb/test_types()
 	var/datum/type/testing/datum/dtest/D = new
 	var/mob/type/testing/mob/mtest/M = new
