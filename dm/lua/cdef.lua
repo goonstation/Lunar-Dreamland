@@ -68,7 +68,7 @@ typedef struct ProcState { //rename this
 typedef struct ExecutionContext {
 	ProcState* proc_state;
 	ExecutionContext* parent_context;
-	int dbg_proc_name;
+	int dbg_proc_file;
 	int dbg_current_line;
 	int* bytecode;
 	int current_opcode;

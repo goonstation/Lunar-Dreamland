@@ -29,7 +29,7 @@ var/x = 1
 breakpoint
 return x
 ]]
-local new_bytecode = {0x50, 0x01, 0x34, 0xFFDA, 0x00, 0x1337, 0x33, 0xFFDA, 0x00, 0x12}
+--[[local new_bytecode = {0x50, 0x01, 0x34, 0xFFDA, 0x00, 0x1337, 0x33, 0xFFDA, 0x00, 0x12}
 local new_varcount = 1 -- This will be supplied by the compiler
 local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
 
@@ -44,6 +44,9 @@ proc_to_recompile.local_var_count = new_varcount
 print("")
 print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
+]]
+local p = proc.getProcSetupInfo("/client/verb/read_list")
+disasm.disassemble(p.bytecode, p.bytecode_len)
 
 byond.set_breakpoint_func(
 	function(ctx)

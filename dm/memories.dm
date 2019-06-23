@@ -83,10 +83,23 @@ var/datum/access_test/test
 	spawn(10)
 		world << "spawned"
 	return 2
+/client/verb/looptest()
+	for(var/i=1 to 10)
+		world << i
+/client/verb/whileloop()
+	var/x = 5
+	while(x > 0)
+		world << x
+		x--
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
-	//dud
+	world << "do not optimize me out"
 /client/verb/happy_proc()
+	var/x = 1
+	x--
 	return 5
+/client/verb/read_list()
+	var/list/n = list()
+	var/x = n.len
 /client/proc/ct()
 	var/local_1 = 1
 	var/local_2 = 2
@@ -94,8 +107,7 @@ var/datum/access_test/test
 /client/verb/context_test()
 	return ct()
 /client/verb/other_file_test()
-	. = 5
-	return from_another_file()
+	return from_another_file(5, 6, 7)
 var/global/cats=1
 var/init_res = ""
 /world/New()
