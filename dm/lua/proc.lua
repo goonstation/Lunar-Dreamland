@@ -2,6 +2,7 @@ local t2t = require "type2type"
 local ffi = require("ffi")
 local signatures = require "signatures"
 local constants = require "defines"
+local debugger = require "debugger"
 
 local M = require "byond"
 M.procHooks = {}
@@ -18,6 +19,14 @@ end
 function procMeta:hook(callback)
 	print("proc hook added: " .. self.name)
 	M.procHooks[self.id] = callback
+end
+
+function procMeta:set_breakpoint()
+	local setup = M.getProcSetupInfo(self.path)
+	debugger.replaced_opcode = setup.bytecode[0]
+	debugger.bytecode_len = setup.bytecode_len
+	setup.bytecode[0] = 0x1337
+	M.set_breakpoint_func(debugger.debug_hook)
 end
 
 function procMeta:__call(...)

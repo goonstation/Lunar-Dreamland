@@ -45,10 +45,10 @@ print("")
 print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
-local p = proc.getProcSetupInfo("/client/verb/various")
-disasm.disassemble(p.bytecode, p.bytecode_len)
+proc.getProc("/client/verb/various"):set_breakpoint()
+--disasm.disassemble(p.bytecode, p.bytecode_len)
 
-byond.set_breakpoint_func(
+--[[byond.set_breakpoint_func(
 	function(ctx)
 		print("Debug breakpoint hit!")
 		print("Dumping local variables...")
@@ -57,8 +57,7 @@ byond.set_breakpoint_func(
 		end
 		print("Resuming!")
 	end
-)
-
+)]]
 proc.getProc("/proc/conoutput"):hook(
 	function(original, msg)
 		print("Debug: " .. msg)

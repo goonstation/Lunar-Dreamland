@@ -146,12 +146,12 @@ function M.test_disassemble()
 	M.disassemble(bytecode)
 end
 
-function M.disassemble(bytecode, bytecode_len)
+function M.disassemble(bytecode, bytecode_len, wanted_offset)
 	local bytecode_len = bytecode_len or #bytecode
 	local current_offset = 0
-	for i = 0, bytecode_len do
+	--[[for i = 0, bytecode_len do
 		print(string.format("%x", bytecode[i]))
-	end
+	end]]
 	while current_offset < bytecode_len do
 		local current_opcode = bytecode[current_offset]
 		local mnemonic = mnemonics[current_opcode]
@@ -166,7 +166,13 @@ function M.disassemble(bytecode, bytecode_len)
 			else
 				out = {current_offset, "|", mnemonic, table.concat(pretty_args or {}, " ")}
 			end
-			print(table.concat(out, " "))
+			if wanted_offset then
+				if current_offset == wanted_offset then
+					print(table.concat(out, " "))
+				end
+			else
+				print(table.concat(out, " "))
+			end
 			current_offset = current_offset + arg_count
 		else
 			arg_count = arg_counts[current_opcode] or 0
@@ -175,10 +181,28 @@ function M.disassemble(bytecode, bytecode_len)
 				table.insert(pretty_args, bytecode[current_offset + i])
 			end
 			local out = {current_offset, "|", mnemonic, table.concat(pretty_args, " ")}
-			print(table.concat(out, " "))
+			if wanted_offset then
+				if current_offset == wanted_offset then
+					print(table.concat(out, " "))
+				end
+			else
+				print(table.concat(out, " "))
+			end
 			current_offset = current_offset + arg_count
 		end
 		current_offset = current_offset + 1
+	end
+end
+
+function M.get_instruction_length(bytecode, offset)
+	local current_opcode = bytecode[offset]
+	local vararg_dis = variable_argcount_disassemblers[current_opcode]
+	if vararg_dis then
+		mnemonic_mod, arg_count, pretty_args = vararg_dis(bytecode, offset)
+		return offset + arg_count + 1
+	else
+		arg_count = arg_counts[current_opcode] or 0
+		return offset + arg_count + 1
 	end
 end
 
