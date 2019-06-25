@@ -78,6 +78,9 @@ var/datum/access_test/test
 	O.obj_proc2()
 	var/obj/type/testing/obj/otest/O2 = new
 	O2.obj_proc(1, 2, 3)
+/client/verb/various()
+	var/z = 5
+	z = -z
 /client/verb/test_types()
 	var/datum/type/testing/datum/dtest/D = new
 	var/mob/type/testing/mob/mtest/M = new

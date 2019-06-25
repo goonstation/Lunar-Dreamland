@@ -3,6 +3,7 @@ local t2t = require "type2type"
 local M = {}
 
 local xvar_magic_numbers = {
+	[0xFFCD] = "USR",
 	[0xFFCE] = "SRC",
 	[0xFFD0] = "DOT",
 	[0xFFD9] = "ARG",
@@ -15,7 +16,7 @@ local xvar_magic_numbers = {
 }
 
 local mnemonics = {
-	[0x00] = "RET", --return
+	[0x00] = "RETN", --return
 	[0x01] = "NEW", --create new datum
 	[0x03] = "OUTPUT", --output to something (<<)
 	[0x0D] = "TEST", --test if top of stack is true and set test flag
@@ -34,6 +35,7 @@ local mnemonics = {
 	[0x3A] = "TG", --test greater
 	[0x3B] = "TLE", --test lower or equal
 	[0x3C] = "TGE", --test greater or equal
+	[0x3D] = "ANEG",
 	[0x3E] = "ADD", --add two values
 	[0x3F] = "SUB", --subtract two values
 	[0x45] = "ADDIP",
@@ -46,9 +48,12 @@ local mnemonics = {
 	[0x67] = "DEC",
 	[0x84] = "DBG FILE", --set context proc file field (debug mode only)
 	[0x85] = "DBG LINENO", --set context line number (debug mode only)
+	[0xBA] = "PROMPTCHECK",
+	[0xC1] = "INPUT",
 	[0xF8] = "JMP",
 	[0xFB] = "POP",
 	[0xFC] = "CHECKNUM",
+	[0x109] = "MD5",
 	[0x1337] = "DBG BREAK" --invoke breakpoint handler (dreamland only)
 }
 
@@ -64,12 +69,12 @@ local arg_counts = {
 	[0x11] = 1,
 	[0x1A] = 1,
 	[0x25] = 1,
-	[0x2A] = 7,
 	[0x30] = 3,
 	[0x50] = 1,
 	[0x5B] = 1,
 	[0x84] = 1,
 	[0x85] = 1,
+	[0xC1] = 3,
 	[0xF8] = 1,
 	[0xFB] = 1
 }
@@ -84,7 +89,7 @@ function disassemble_var_access(bytecode, offset)
 	local arg_prettyprint
 	if gettype == "LOCAL" then
 		arg_prettyprint = {bytecode[offset + 2]}
-	elseif gettype == "WORLD" then
+	elseif gettype == "WORLD" or gettype == "USR" or gettype == "SRC" then
 		arg_len = 1
 		arg_prettyprint = {}
 	elseif gettype == "DATUM" then
@@ -104,7 +109,7 @@ function disassemble_pushval(bytecode, offset)
 	if type == consts.Number then
 		arg_len = 3
 	elseif type == consts.Null then
-		arg_len = 1
+		arg_len = 2
 	end
 	return consts.types[type]:upper(), arg_len, {bytecode[offset + 2]}
 end
