@@ -42,15 +42,19 @@ local mnemonics = {
 	[0x46] = "SUBIP",
 	[0x50] = "PUSHI", --push integer
 	[0x51] = "DECREF", --decrement value refcount
+	[0x52] = "ITERLOAD",
+	[0x53] = "ITERNEXT",
 	[0x5B] = "LOCATE",
 	[0x60] = "PUSHVAL", --push value
 	[0x66] = "INC",
 	[0x67] = "DEC",
+	[0x7D] = "ISTYPE",
 	[0x84] = "DBG FILE", --set context proc file field (debug mode only)
 	[0x85] = "DBG LINENO", --set context line number (debug mode only)
 	[0xBA] = "PROMPTCHECK",
 	[0xC1] = "INPUT",
 	[0xF8] = "JMP",
+	[0xFA] = "JMPT",
 	[0xFB] = "POP",
 	[0xFC] = "CHECKNUM",
 	[0x109] = "MD5",
@@ -59,7 +63,7 @@ local mnemonics = {
 
 local mnemonic_meta = {}
 function mnemonic_meta.__index(self, key)
-	return rawget(self, key) or "???"
+	return rawget(self, key) or "??? (" .. tostring(key) .. ")"
 end
 
 mnemonics = setmetatable(mnemonics, mnemonic_meta)
@@ -71,11 +75,13 @@ local arg_counts = {
 	[0x25] = 1,
 	[0x30] = 3,
 	[0x50] = 1,
+	[0x52] = 2,
 	[0x5B] = 1,
 	[0x84] = 1,
 	[0x85] = 1,
 	[0xC1] = 3,
 	[0xF8] = 1,
+	[0xFA] = 1,
 	[0xFB] = 1
 }
 
@@ -86,18 +92,19 @@ end
 function disassemble_var_access(bytecode, offset)
 	local gettype = xvar_magic_numbers[bytecode[offset + 1]]
 	local arg_len = 2
-	local arg_prettyprint
+	local arg_prettyprint = {}
 	if gettype == "LOCAL" then
 		arg_prettyprint = {bytecode[offset + 2]}
 	elseif gettype == "WORLD" or gettype == "USR" or gettype == "SRC" then
 		arg_len = 1
-		arg_prettyprint = {}
 	elseif gettype == "DATUM" then
 		local datumscope = xvar_magic_numbers[bytecode[offset + 2]]
 		if datumscope == "LOCAL" then
 			arg_len = 4
 			arg_prettyprint = {bytecode[offset + 3], bytecode[offset + 4], "(" .. t2t.idx2str(bytecode[offset + 4]) .. ")"}
 		end
+	elseif gettype == "NULL" then
+		arg_len = 1
 	end
 	return gettype, arg_len, arg_prettyprint
 end
@@ -194,7 +201,7 @@ function M.disassemble(bytecode, bytecode_len, wanted_offset)
 	end
 end
 
-function M.get_instruction_length(bytecode, offset)
+function M.get_next_instruction_offset(bytecode, offset)
 	local current_opcode = bytecode[offset]
 	local vararg_dis = variable_argcount_disassemblers[current_opcode]
 	if vararg_dis then

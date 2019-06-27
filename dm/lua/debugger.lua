@@ -10,7 +10,7 @@ function M.debug_hook(ctx)
 	local bytecode = ctx.bytecode
 	bytecode[M.replaced_offset] = M.replaced_opcode
 	dis.disassemble(bytecode, M.bytecode_len, M.replaced_offset)
-	M.replaced_offset = dis.get_instruction_length(bytecode, M.replaced_offset)
+	M.replaced_offset = dis.get_next_instruction_offset(bytecode, M.replaced_offset)
 	print("Next instruction to replace is at offset", M.replaced_offset)
 	if M.replaced_offset >= M.bytecode_len then
 		print("Stepped through everything!")

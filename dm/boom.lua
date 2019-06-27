@@ -33,8 +33,6 @@ return x
 local new_varcount = 1 -- This will be supplied by the compiler
 local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
 
-local proc_to_recompile = proc.getProcSetupInfo("/client/verb/anewlist")
-
 print("Original proc:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 
@@ -45,8 +43,9 @@ print("")
 print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
-proc.getProc("/client/verb/various"):set_breakpoint()
---disasm.disassemble(p.bytecode, p.bytecode_len)
+--proc.getProc("/client/verb/various"):set_breakpoint()
+local p = proc.getProcSetupInfo("/client/verb/various")
+disasm.disassemble(p.bytecode, p.bytecode_len)
 
 --[[byond.set_breakpoint_func(
 	function(ctx)

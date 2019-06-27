@@ -81,7 +81,18 @@ typedef struct ExecutionContext {
 	Value* stack;
 	short local_var_count;
 	short stack_size;
-	char unknown3[84];
+	int unknown;
+	Value* current_iterator;
+	int iterator_allocated;
+	int iterator_length;
+	int iterator_index;
+	char unknown3[7];
+	char iterator_filtered_type;
+	char unknown4;
+	char iterator_unknown;
+	char unknown5;
+	int infinite_loop_count;
+	char unknown6[54];
 } ExecutionContext;
 
 typedef struct ProcSetupEntry {

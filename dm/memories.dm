@@ -1,5 +1,5 @@
 /world
-	loop_checks = 0
+	loop_checks = 1
 /client
 	var/list/listvar = list(1, "test")
 /client/verb/initDLL()
@@ -79,8 +79,9 @@ var/datum/access_test/test
 	var/obj/type/testing/obj/otest/O2 = new
 	O2.obj_proc(1, 2, 3)
 /client/verb/various()
-	var/z = 5
-	z = -z
+	var/list/L = list(1,2,3,null,5,6,7)
+	for(var/obj/type/testing/obj/otest/i in L)
+		world << i
 /client/verb/test_types()
 	var/datum/type/testing/datum/dtest/D = new
 	var/mob/type/testing/mob/mtest/M = new
