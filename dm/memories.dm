@@ -1,5 +1,5 @@
 /world
-	loop_checks = 1
+	loop_checks = 0
 /client
 	var/list/listvar = list(1, "test")
 /client/verb/initDLL()
