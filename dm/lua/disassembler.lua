@@ -20,7 +20,7 @@ local mnemonics = {
 	[0x01] = "NEW", --create new datum
 	[0x03] = "OUTPUT", --output to something (<<)
 	[0x0D] = "TEST", --test if top of stack is true and set test flag
-	[0x0E] = "LNEG", --logical negation
+	[0x0E] = "NOT", --logical negation
 	[0x11] = "JZ", --jump if test flag is false
 	[0x12] = "RET", --return value
 	[0x1A] = "NLIST", --create new list
@@ -90,7 +90,7 @@ function disassemble_procfile(bytecode, offset)
 end
 
 function disassemble_var_access(bytecode, offset)
-	local gettype = xvar_magic_numbers[bytecode[offset + 1]]
+	local gettype = xvar_magic_numbers[bytecode[offset + 1]] or "CACHE"
 	local arg_len = 2
 	local arg_prettyprint = {}
 	if gettype == "LOCAL" then
@@ -105,6 +105,9 @@ function disassemble_var_access(bytecode, offset)
 		end
 	elseif gettype == "NULL" then
 		arg_len = 1
+	elseif gettype == "CACHE" then
+		arg_len = 2
+		arg_prettyprint = {"(" .. t2t.idx2str(bytecode[offset + 1]) .. ")"}
 	end
 	return gettype, arg_len, arg_prettyprint
 end
@@ -117,6 +120,9 @@ function disassemble_pushval(bytecode, offset)
 		arg_len = 3
 	elseif type == consts.Null then
 		arg_len = 2
+	end
+	if type == consts.String then
+		return consts.types[type]:upper(), arg_len, {bytecode[offset + 2], "(" .. t2t.idx2str(bytecode[offset + 2]) .. ")"}
 	end
 	return consts.types[type]:upper(), arg_len, {bytecode[offset + 2]}
 end
@@ -168,18 +174,12 @@ function M.disassemble(bytecode, bytecode_len, wanted_offset)
 		if vararg_dis then
 			mnemonic_mod, arg_count, pretty_args = vararg_dis(bytecode, current_offset)
 			local out
-			if mnemonic_mod ~= "" then
+			if mnemonic_mod then
 				out = {current_offset, "|", mnemonic, mnemonic_mod, table.concat(pretty_args or {}, " ")}
 			else
 				out = {current_offset, "|", mnemonic, table.concat(pretty_args or {}, " ")}
 			end
-			if wanted_offset then
-				if current_offset == wanted_offset then
-					print(table.concat(out, " "))
-				end
-			else
-				print(table.concat(out, " "))
-			end
+			print(table.concat(out, " "))
 			current_offset = current_offset + arg_count
 		else
 			arg_count = arg_counts[current_opcode] or 0
@@ -188,13 +188,7 @@ function M.disassemble(bytecode, bytecode_len, wanted_offset)
 				table.insert(pretty_args, bytecode[current_offset + i])
 			end
 			local out = {current_offset, "|", mnemonic, table.concat(pretty_args, " ")}
-			if wanted_offset then
-				if current_offset == wanted_offset then
-					print(table.concat(out, " "))
-				end
-			else
-				print(table.concat(out, " "))
-			end
+			print(table.concat(out, " "))
 			current_offset = current_offset + arg_count
 		end
 		current_offset = current_offset + 1

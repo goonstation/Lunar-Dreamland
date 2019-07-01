@@ -123,6 +123,14 @@ var/datum/access_test/test
 	return ct()
 /client/verb/other_file_test()
 	return from_another_file(5, 6, 7)
+/client/verb/get_set_datum_test()
+	var/obj/type/testing/obj/otest/O = new
+	var/obj/type/testing/obj/otest/O2 = new
+	O2.name = "test"
+	world << O2.name
+	return from_another_file(5, 6, 7)
+/client/verb/sleep_test()
+	sleep(10)
 var/global/cats=1
 var/init_res = ""
 /world/New()

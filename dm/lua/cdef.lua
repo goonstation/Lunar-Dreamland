@@ -72,9 +72,8 @@ typedef struct ExecutionContext {
 	int dbg_current_line;
 	int* bytecode;
 	int current_opcode;
-	char unknown1[6];
-	bool paused;
-	char unknown2[9];
+	Value cached_datum;
+	char unknown2[8];
 	int test_flag;
 	char unknown3[12];
 	Value* local_variables;
@@ -92,7 +91,9 @@ typedef struct ExecutionContext {
 	char iterator_unknown;
 	char unknown5;
 	int infinite_loop_count;
-	char unknown6[54];
+	char unknown6[2];
+	bool paused;
+	char unknown6[51];
 } ExecutionContext;
 
 typedef struct ProcSetupEntry {
