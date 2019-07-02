@@ -44,8 +44,38 @@ print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
 --proc.getProc("/client/verb/various"):set_breakpoint()
-local p = proc.getProcSetupInfo("/client/verb/looptest")
-disasm.disassemble(p.bytecode, p.bytecode_len)
+--local p = proc.getProcSetupInfo("/client/verb/looptest")
+--disasm.disassemble(p.bytecode, p.bytecode_len)
+
+local new_bytecode = {
+	0x33,
+	0xFFE5,
+	0x60,
+	0x06,
+	t2t.str2index("Before pause!"),
+	0x3,
+	0x1338,
+	0x33,
+	0xFFE5,
+	0x60,
+	0x06,
+	t2t.str2index("After pause!"),
+	0x03,
+	0x00
+}
+local new_varcount = 0
+local cnew_bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
+
+local p = proc.getProcSetupInfo("/client/verb/pauseable_proc")
+
+p.bytecode = cnew_bytecode
+p.local_var_count = new_varcount
+
+p = proc.getProcSetupInfo("/client/verb/resume_paused")
+
+local new_bytecode2 = {0x1339, 0x00}
+local cnew_bytecode2 = ffi.new("int[?]", #new_bytecode2, new_bytecode2)
+p.bytecode = cnew_bytecode2
 
 --[[byond.set_breakpoint_func(
 	function(ctx)

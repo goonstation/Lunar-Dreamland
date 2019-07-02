@@ -22,6 +22,7 @@ typedef unsigned int(*CreateList)(unsigned int reserveSize);
 typedef Value(*New)(Value* type, Value* args, unsigned int num_args, int unknown);
 typedef void(*TempBreakpoint)();
 typedef void(*CrashProc)(char* error, int argument);
+typedef AnotherProcState*(*ResumeIn)(ExecutionContext* ctx, float deciseconds);
 ]]
 
 return require("signatures." .. (jit.os):lower())

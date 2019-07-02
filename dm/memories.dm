@@ -141,3 +141,11 @@ var/init_res = ""
 /client/New()
 	..()
 	src << init_res
+
+/client/verb/pauseable_proc()
+	world << "before pause!"
+	world << "after pause!"
+/client/verb/resume_paused()
+	//dud
+/client/verb/while_paused()
+	world << "This was printed while another proc was paused!"

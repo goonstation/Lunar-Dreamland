@@ -65,6 +65,11 @@ typedef struct ProcState { //rename this
 	Value usr;
 } ProcState;
 
+typedef struct AnotherProcState {
+	char unknown[0x88];
+	int time_to_resume;
+} AnotherProcState;
+
 typedef struct ExecutionContext {
 	ProcState* proc_state;
 	ExecutionContext* parent_context;
