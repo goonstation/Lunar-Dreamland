@@ -149,3 +149,14 @@ var/init_res = ""
 	//dud
 /client/verb/while_paused()
 	world << "This was printed while another proc was paused!"
+
+/client/verb/recompilable_verb()
+	var/x = "Before recompilation!"
+	world << x
+
+/client/verb/recompile_the_verb()
+	var/code = input("DM code goes here") as message
+	recompile(code)
+
+/client/proc/recompile(code)
+	//dud

@@ -22,6 +22,8 @@ local disasm = require "disassembler"
 local T = byond.T
 
 local ffi = require "ffi"
+
+local compiler = require "compiler"
 print "hooking!"
 
 --[[ new code:
@@ -87,6 +89,10 @@ p.bytecode = cnew_bytecode2
 		print("Resuming!")
 	end
 )]]
+--[[compiler.compile_disassemble([[
+var/x = "After recompilation!"
+world << x
+]]
 proc.getProc("/proc/conoutput"):hook(
 	function(original, msg)
 		print("Debug: " .. msg)
@@ -151,6 +157,13 @@ proc.getProc("/client/proc/typetest"):hook(
 proc.getProc("/client/verb/context_test"):hook(
 	function(original, usr, src)
 		print(context.get_context().proc_state)
+	end
+)
+
+proc.getProc("/client/proc/recompile"):hook(
+	function(original, usr, src, newcode)
+		p = byond.getProcSetupInfo("/client/verb/recompilable_verb")
+		p.bytecode = compiler.compile(newcode)
 	end
 )
 
