@@ -1,5 +1,6 @@
 local consts = require "defines"
 local t2t = require "type2type"
+local proc = require "proc"
 local M = {}
 
 function table.flatten(arr)
@@ -91,7 +92,6 @@ local arg_counts = {
 	[0x11] = 1,
 	[0x1A] = 1,
 	[0x25] = 1,
-	[0x30] = 2,
 	[0x50] = 1,
 	[0x52] = 2,
 	[0x5B] = 1,
@@ -223,9 +223,18 @@ function disassemble_call(bytecode, offset)
 	return t, l + 1, p
 end
 
+function disassemble_global_call(bytecode, offset)
+	params = {}
+	for i = 1, bytecode[offset + 1] do
+		table.insert(params, "param" .. i)
+	end
+	return "", 2, {proc.getProcById(bytecode[offset + 2]).path .. "(" .. table.concat(params, ", ") .. ")"}
+end
+
 local variable_argcount_disassemblers = {
 	[0x29] = disassemble_call,
 	[0x2A] = disassemble_call,
+	[0x30] = disassemble_global_call,
 	[0x33] = disassemble_var_read,
 	[0x34] = disassemble_var_write,
 	[0x60] = disassemble_pushval,

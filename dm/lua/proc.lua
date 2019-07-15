@@ -2,7 +2,7 @@ local t2t = require "type2type"
 local ffi = require("ffi")
 local signatures = require "signatures"
 local constants = require "defines"
-local debugger = require "debugger"
+--local debugger = require "debugger"
 
 local M = require "byond"
 M.procHooks = {}
@@ -21,14 +21,13 @@ function procMeta:hook(callback)
 	M.procHooks[self.id] = callback
 end
 
-function procMeta:set_breakpoint()
+--[[function procMeta:set_breakpoint()
 	local setup = M.getProcSetupInfo(self.path)
 	debugger.replaced_opcode = setup.bytecode[0]
 	debugger.bytecode_len = setup.bytecode_len
 	setup.bytecode[0] = 0x1337
 	M.set_breakpoint_func(debugger.debug_hook)
-end
-
+end]]
 function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
@@ -93,7 +92,7 @@ for i = 0, 0xFFFFFF do
 			},
 			procMeta
 		)
-		typecache.procs[i] = {id = i, proc = entry}
+		typecache.procs[i] = built
 		typecache.procs[built.path] = built
 		print(t2t.idx2str(entry.procPath), entry.unknown2)
 	else
@@ -106,6 +105,14 @@ function M.getProc(path)
 	local ret = typecache.procs[path]
 	if not ret then
 		error("ERROR: " .. path .. " is not a valid proc!")
+	end
+	return ret
+end
+
+function M.getProcById(id)
+	local ret = typecache.procs[id]
+	if not ret then
+		error("ERROR: " .. id .. " is not a valid proc ID!")
 	end
 	return ret
 end

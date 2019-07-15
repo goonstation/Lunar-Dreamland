@@ -151,8 +151,8 @@ var/init_res = ""
 	world << "This was printed while another proc was paused!"
 
 /client/verb/recompilable_verb()
-	var/x = -"Before recompilation!"
-	world << while_paused().len
+	var/x = "Before recompilation!"
+	world << x
 
 /client/verb/recompile_the_verb()
 	var/code = input("DM code goes here") as message
@@ -162,11 +162,14 @@ var/init_res = ""
 	//dud
 
 /client/verb/srcvar()
-	//var/list/L = list(1, 2, 3)
+	var/list/L = list(1, 2, 3)
 	//world << L.len
 	//world << L
-	world << listvar.Copy()
+	world << L.Copy()
 
 /client/verb/subvar()
 	var/list/L = list()
 	world << L.len
+
+/proc/to_chat(x, y)
+	x << y

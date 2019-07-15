@@ -46,42 +46,8 @@ print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
 --proc.getProc("/client/verb/various"):set_breakpoint()
-local p = proc.getProcSetupInfo("/client/verb/srcvar")
-disasm.disassemble(p.bytecode, p.bytecode_len)
-
-test = {
-	0x50,
-	0x5,
-	0x34,
-	0xffda,
-	0x0,
-	0x33,
-	0xffda,
-	0x0,
-	0x50,
-	0x5,
-	0x37,
-	0xd,
-	0x11,
-	0x18,
-	0x33,
-	0xffe5,
-	0x50,
-	0x1,
-	0x30,
-	0x2,
-	0x69,
-	0xf8,
-	0x1a,
-	0x50,
-	0x3,
-	0x12,
-	0x00
-}
-print("\n\n\n\n\n")
-disasm.disassemble(test, #test, 1)
-print("\n\n\n\n\n")
-
+--[[local p = proc.getProcSetupInfo("/client/verb/srcvar")
+disasm.disassemble(p.bytecode, p.bytecode_len)]]
 local new_bytecode = {
 	0x33,
 	0xFFE5,

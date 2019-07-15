@@ -1,4 +1,4 @@
-local dis = require "disassembler"
+--local dis = require "disassembler"
 local signatures = require "signatures"
 local ffi = require "ffi"
 local M = {}
@@ -13,8 +13,8 @@ M.suspended_replaced_opcode = 0x1338
 function M.debug_hook(ctx)
 	local bytecode = ctx.bytecode
 	bytecode[M.replaced_offset] = M.replaced_opcode
-	dis.disassemble(bytecode, M.bytecode_len, M.replaced_offset)
-	M.replaced_offset = dis.get_next_instruction_offset(bytecode, M.replaced_offset)
+	--dis.disassemble(bytecode, M.bytecode_len, M.replaced_offset)
+	--M.replaced_offset = dis.get_next_instruction_offset(bytecode, M.replaced_offset)
 	print("Next instruction to replace is at offset", M.replaced_offset)
 	if M.replaced_offset >= M.bytecode_len then
 		print("Stepped through everything!")
