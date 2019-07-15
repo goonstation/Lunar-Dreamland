@@ -2,6 +2,23 @@ local consts = require "defines"
 local t2t = require "type2type"
 local M = {}
 
+function table.flatten(arr)
+	local result = {}
+
+	local function flatten(arr)
+		for _, v in ipairs(arr) do
+			if type(v) == "table" then
+				flatten(v)
+			else
+				table.insert(result, v)
+			end
+		end
+	end
+
+	flatten(arr)
+	return result
+end
+
 local xvar_magic_numbers = {
 	[0xFFCD] = "USR",
 	[0xFFCE] = "SRC",
@@ -9,7 +26,7 @@ local xvar_magic_numbers = {
 	[0xFFD9] = "ARG",
 	[0xFFDA] = "LOCAL",
 	[0xFFDB] = "GLOBAL",
-	[0xFFDC] = "DATUM",
+	[0xFFDC] = "SUBVAR",
 	[0xFFDD] = "CACHE",
 	[0xFFE5] = "WORLD",
 	[0xFFE6] = "NULL"
@@ -25,7 +42,8 @@ local mnemonics = {
 	[0x12] = "RET", --return value
 	[0x1A] = "NLIST", --create new list
 	[0x25] = "SPAWN", --pop value from stack and create "thread" after that many deciseconds, jump ahead arg1 opcodes and continue
-	[0x2A] = "CALLDATUM", --decref variables?
+	[0x29] = "CALL",
+	[0x2A] = "CALLNR", --decref variables?
 	[0x30] = "CALLGLOB", --call proc by id
 	[0x33] = "GETVAR", --get variable by id and push
 	[0x34] = "SETVAR", --pop and set variable by id
@@ -63,7 +81,7 @@ local mnemonics = {
 
 local mnemonic_meta = {}
 function mnemonic_meta.__index(self, key)
-	return rawget(self, key) or "??? (" .. tostring(key) .. ")"
+	return rawget(self, key) or "??? (" .. string.format("%x", key) .. ")"
 end
 
 mnemonics = setmetatable(mnemonics, mnemonic_meta)
@@ -73,7 +91,7 @@ local arg_counts = {
 	[0x11] = 1,
 	[0x1A] = 1,
 	[0x25] = 1,
-	[0x30] = 3,
+	[0x30] = 2,
 	[0x50] = 1,
 	[0x52] = 2,
 	[0x5B] = 1,
@@ -89,16 +107,68 @@ function disassemble_procfile(bytecode, offset)
 	return "", 1, {bytecode[offset + 1], "(" .. t2t.idx2str(bytecode[offset + 1]) .. ")"}
 end
 
-function disassemble_var_access(bytecode, offset)
-	local gettype = xvar_magic_numbers[bytecode[offset + 1]] or "CACHE"
+function subrange(t, first, len)
+	local sub = {}
+	for i = first, first + len - 1 do
+		if not t[i] then
+			break
+		end
+		sub[#sub + 1] = t[i]
+	end
+	return sub
+end
+
+function var_next(bytecode)
+	local byte = table.remove(bytecode, 1)
+	if not byte then
+		return {"ERROR"}
+	end
+	if byte < 0xff00 then
+		return {string.format("0x%x", byte)}
+	end
+	local sbyte = xvar_magic_numbers[byte]
+	if sbyte == "LOCAL" then
+		return {"LOCAL", tostring(table.remove(bytecode, 1))}
+	elseif sbyte == "SRC" then
+		return {"SRC"}
+	elseif sbyte == "WORLD" then
+		return {"WORLD"}
+	elseif sbyte == "CACHE" then
+		return {"CACHE", var_next(bytecode)}
+	elseif sbyte == "SUBVAR" then
+		return {var_next(bytecode), "SUBVAR", var_next(bytecode)}
+	else
+		error("UNIMPLEMENTED VAR ACCESS: 0x" .. string.format("%x", byte))
+	end
+end
+
+function disassemble_var_read(bytecode, offset)
+	local byte_copy = subrange(bytecode, offset + 1, 32)
+	local derp = table.flatten(var_next(byte_copy))
+	local pretty_printout = {}
+	for k, v in ipairs(derp) do
+		if string.sub(v, 1, 2) == "0x" then
+			if derp[k - 1] == "CACHE" then
+				table.insert(pretty_printout, "." .. t2t.idx2str(tonumber(v)))
+			else
+				table.insert(pretty_printout, t2t.idx2str(tonumber(v)))
+			end
+		elseif v == "SUBVAR" then
+			table.insert(pretty_printout, ".")
+		elseif v then
+			table.insert(pretty_printout, v)
+		end
+	end
+	return table.concat(derp, " "), #derp, {"(" .. table.concat(pretty_printout, "") .. ")"}
+	--[[local gettype = xvar_magic_numbers[bytecode[offset + 1]\] or "CACHE"
 	local arg_len = 2
 	local arg_prettyprint = {}
 	if gettype == "LOCAL" then
 		arg_prettyprint = {bytecode[offset + 2]}
 	elseif gettype == "WORLD" or gettype == "USR" or gettype == "SRC" then
 		arg_len = 1
-	elseif gettype == "DATUM" then
-		local datumscope = xvar_magic_numbers[bytecode[offset + 2]]
+	elseif gettype == "SUBVAR" then
+		local datumscope = xvar_magic_numbers[bytecode[offset + 2]\]
 		if datumscope == "LOCAL" then
 			arg_len = 4
 			arg_prettyprint = {bytecode[offset + 3], bytecode[offset + 4], "(" .. t2t.idx2str(bytecode[offset + 4]) .. ")"}
@@ -106,10 +176,15 @@ function disassemble_var_access(bytecode, offset)
 	elseif gettype == "NULL" then
 		arg_len = 1
 	elseif gettype == "CACHE" then
-		arg_len = 2
+		arg_len = 3
 		arg_prettyprint = {"(" .. t2t.idx2str(bytecode[offset + 1]) .. ")"}
 	end
-	return gettype, arg_len, arg_prettyprint
+	return gettype, arg_len, arg_prettyprint]]
+end
+
+function disassemble_var_write(bytecode, offset)
+	local t, l, p = disassemble_var_read(bytecode, offset)
+	return t, l, p
 end
 
 function disassemble_pushval(bytecode, offset)
@@ -142,15 +217,22 @@ function disassemble_datumcall(bytecode, offset)
 	end
 end
 
+function disassemble_call(bytecode, offset)
+	t, l, p = disassemble_var_read(bytecode, offset)
+	table.insert(p, tostring(bytecode[offset + l + 1] .. " args"))
+	return t, l + 1, p
+end
+
 local variable_argcount_disassemblers = {
-	[0x2A] = disassemble_datumcall,
-	[0x33] = disassemble_var_access,
-	[0x34] = disassemble_var_access,
+	[0x29] = disassemble_call,
+	[0x2A] = disassemble_call,
+	[0x33] = disassemble_var_read,
+	[0x34] = disassemble_var_write,
 	[0x60] = disassemble_pushval,
-	[0x66] = disassemble_var_access,
-	[0x67] = disassemble_var_access,
-	[0x45] = disassemble_var_access,
-	[0x46] = disassemble_var_access,
+	[0x66] = disassemble_var_read,
+	[0x67] = disassemble_var_read,
+	[0x45] = disassemble_var_read,
+	[0x46] = disassemble_var_read,
 	[0x84] = disassemble_procfile
 }
 
@@ -159,12 +241,12 @@ function M.test_disassemble()
 	M.disassemble(bytecode)
 end
 
-function M.disassemble(bytecode, bytecode_len, wanted_offset)
+function M.disassemble(bytecode, bytecode_len, start_offset)
 	local bytecode_len = bytecode_len or #bytecode
-	local current_offset = 0
-	--[[for i = 0, bytecode_len do
-		print(string.format("%x", bytecode[i]))
-	end]]
+	local current_offset = start_offset or 0
+	--for i = 0, bytecode_len do
+	--	print(string.format("%x", bytecode[i]))
+	--end
 	while current_offset < bytecode_len do
 		local current_opcode = bytecode[current_offset]
 		local mnemonic = mnemonics[current_opcode]
