@@ -47,7 +47,7 @@ function M.toLua(value)
 	if t then
 		return t(value)
 	else
-		print("??? value2lua type: " .. value.type)
+		print("??? value2lua type: " .. value)
 	end
 end
 --use refcount if we're assigning or invoking

@@ -46,8 +46,8 @@ print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
 --proc.getProc("/client/verb/various"):set_breakpoint()
---[[local p = proc.getProcSetupInfo("/client/verb/srcvar")
-disasm.disassemble(p.bytecode, p.bytecode_len)]]
+local p = proc.getProcSetupInfo("/client/verb/ctest")
+disasm.disassemble(p.bytecode, p.bytecode_len)
 local new_bytecode = {
 	0x33,
 	0xFFE5,
@@ -162,8 +162,14 @@ proc.getProc("/client/verb/context_test"):hook(
 proc.getProc("/client/proc/recompile"):hook(
 	function(original, usr, src, newcode)
 		p = byond.getProcSetupInfo("/client/verb/recompilable_verb")
-		p.bytecode = compiler.compile(newcode)
+		local new = compiler.compile(newcode)
+		if new then
+			print("setting")
+			p.bytecode = new
+		end
 	end
 )
 
 print("Hooked everything")
+print(proc.getProc("/proc/conoutput").id)
+print(proc.getProc("/proc/to_chat").id)

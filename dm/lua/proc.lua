@@ -32,7 +32,7 @@ function procMeta:__call(...)
 	local args = {...}
 	local argv = {}
 	for i = 1, #args do
-		local v = t2t.toLua(args[i], true)
+		local v = t2t.toValue(args[i], true)
 		if v then
 			table.insert(argv, v)
 		end

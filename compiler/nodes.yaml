@@ -1,0 +1,105 @@
+Block:
+  extends: Node
+  constructor-optional:
+  fields:
+    - std::vector<Node*> stmt_list
+  custom-destructor: "~Block() { for(Node* n: stmt_list) { delete n; } stmt_list.clear(); }"
+
+ExpressionList:
+  extends: Expression
+  constructor-optional:
+  fields:
+    - std::optional<std::vector<Expression*>> expressions
+  custom-destructor: "~ExpressionList() { if(expressions) { for(Expression* e: *expressions) { delete e; } } expressions->clear(); }"
+
+FunctionCall:
+  extends: Expression
+  fields:
+    - std::string name
+    - ExpressionList* args
+    
+ListDeclaration:
+  extends: Expression
+  fields:
+    - ExpressionList* contents
+
+Group:
+  extends: Expression
+  fields:
+    - Expression* content
+
+ListAccess:
+  extends: Expression
+  fields:
+    - std::string name
+    - Expression* index
+    - SubAccess* subvar
+
+VariableAccess:
+  extends: Expression
+  fields:
+    - std::string name
+    - SubAccess* subvar
+
+Value:
+  extends: Expression
+  fields:
+    - std::string value
+  types:
+    - Integer
+    - Float
+    - String
+
+
+UnaryOperation:
+  extends: Expression
+  fields:
+    - Expression* right
+  types:
+    - ArithmeticNegation
+    - LogicalNegation
+
+BinaryOperation:
+  extends: Expression
+  fields:
+    - Expression* left
+    - Expression* right
+  types:
+    - Addition
+    - Subtraction
+    - Division
+    - Multiplication
+    - Equal
+    - NotEqual
+    - LessThan
+    - GreaterThan
+    - LessOrEqual
+    - GreaterOrEqual
+
+
+VariableDeclaration:
+  extends: Statement
+  constructor-optional:
+  fields:
+    - std::string name
+    - Expression* initializer
+    - bool is_list
+
+If:
+  extends: Statement
+  fields:
+    - Expression* condition
+    - Block* if_body
+    - Block* else_body
+
+Return:
+  extends: Statement
+  constructor-optional:
+  fields:
+    - Expression* return_expr
+
+Output:
+  extends: Statement
+  fields:
+    - VariableAccess* left
+    - Expression* right

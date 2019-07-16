@@ -151,8 +151,23 @@ var/init_res = ""
 	world << "This was printed while another proc was paused!"
 
 /client/verb/recompilable_verb()
+	var/space_1
+	var/space_2
+	var/space_3
+	var/space_4
 	var/x = "Before recompilation!"
 	world << x
+
+/client/verb/ctest()
+	var/list/truth = list("byond", "is", "cool")
+	var/name_index = 1
+	if(truth[name_index] == "byond")
+		to_chat(world, "Hey, it's the best engine!")
+
+	if(name_index == 2)
+		to_chat(world, "BYOND #2")
+	else
+		to_world("BYOND #1!")
 
 /client/verb/recompile_the_verb()
 	var/code = input("DM code goes here") as message
@@ -160,6 +175,11 @@ var/init_res = ""
 
 /client/proc/recompile(code)
 	//dud
+
+/client/verb/list_access()
+	var/list/x = list(1,2,3)
+	var/dong = 1
+	world << x[dong]
 
 /client/verb/srcvar()
 	var/list/L = list(1, 2, 3)
@@ -173,3 +193,6 @@ var/init_res = ""
 
 /proc/to_chat(x, y)
 	x << y
+
+/proc/to_world(x)
+	world << x
