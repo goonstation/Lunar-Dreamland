@@ -76,7 +76,7 @@ typedef struct ExecutionContext {
 	int dbg_proc_file;
 	int dbg_current_line;
 	int* bytecode;
-	int current_opcode;
+	unsigned short current_opcode;
 	Value cached_datum;
 	char unknown2[8];
 	int test_flag;
@@ -103,8 +103,8 @@ typedef struct ExecutionContext {
 
 typedef struct ProcSetupEntry {
 	union {
-		int local_var_count; 
-		int bytecode_length;
+		short local_var_count; 
+		short bytecode_length;
 	};
 	int* bytecode;
 	int unknown;

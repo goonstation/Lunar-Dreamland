@@ -79,6 +79,8 @@ end
 for i = 0, 0xFFFFFF do
 	local entry = signatures.GetProcArrayEntry(i)
 	if entry ~= ffi.null then
+		--print(i)
+		--print(t2t.idx2str(entry.procPath), entry.unknown2)
 		local built =
 			setmetatable(
 			{
@@ -94,7 +96,6 @@ for i = 0, 0xFFFFFF do
 		)
 		typecache.procs[i] = built
 		typecache.procs[built.path] = built
-		print(t2t.idx2str(entry.procPath), entry.unknown2)
 	else
 		print("Ran out of procs to hook")
 		break
@@ -115,6 +116,10 @@ function M.getProcById(id)
 		error("ERROR: " .. id .. " is not a valid proc ID!")
 	end
 	return ret
+end
+
+function M.allProcs()
+	return typecache.procs
 end
 
 M.callGlobalProcHook =

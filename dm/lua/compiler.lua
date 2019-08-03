@@ -5,7 +5,30 @@ local t2t = require "type2type"
 local proc = require "proc"
 local M = {}
 
-ffi.cdef [[
+function M.link(bytecode, strings)
+	print("Linking...")
+	for _, s_info in ipairs(strings) do
+		bytecode[s_info[2]] = t2t.toValue(ffi.string(s_info[1]), true).value
+	end
+	--[[for i = 0, compiled.function_names_len - 1 do
+		print(ffi.string(compiled.function_names[i]))
+		compiled.bytecode[compiled.call_positions[i]\] = proc.getProc("/proc/" .. ffi.string(compiled.function_names[i])).id
+	end]]
+	print("Linked successfully!")
+end
+
+function M.patch(proc_path, new_bytecode, strings, local_count)
+	local p = proc.getProcSetupInfo(proc_path)
+	bytecode = ffi.new("int[?]", #new_bytecode, new_bytecode)
+	M.link(bytecode, strings)
+	p.bytecode = bytecode
+	p.bytecode_len = #new_bytecode
+	p.local_var_count = local_count
+end
+
+return M
+
+--[[ffi.cdef [[
 	typedef struct CompiledCode {
 		bool success;
 		const char* error;
@@ -21,23 +44,11 @@ ffi.cdef [[
 	} CompiledCode;
 
 	CompiledCode* compile(const char* code);
-]]
+]\]
 
 print("\n")
 
 local compiler = ffi.load("compiler5")
-
-function M.link(compiled)
-	print("Linking...")
-	for i = 0, compiled.strings_len - 1 do
-		compiled.bytecode[compiled.string_positions[i]] = t2t.toValue(ffi.string(compiled.strings[i]), true).value
-	end
-	for i = 0, compiled.function_names_len - 1 do
-		print(ffi.string(compiled.function_names[i]))
-		compiled.bytecode[compiled.call_positions[i]] = proc.getProc("/proc/" .. ffi.string(compiled.function_names[i])).id
-	end
-	print("Linked successfully!")
-end
 
 function M.compile(code)
 	local compiled = compiler.compile(code)
@@ -63,3 +74,4 @@ function M.compile(code)
 end
 
 return M
+]]

@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local ret = {}
 
-local function scan(signature, module, offset)
+local function scan(name, signature, module, offset)
 	local scanned = hook.sigscan(module or "byondcore.dll", signature)
 	if not scanned or scanned == 0 then
 		print("Sigscan failed: " .. name)
@@ -11,11 +11,11 @@ local function scan(signature, module, offset)
 end
 
 local function sigscan(name, type, signature, module, offset)
-	ret[name] = ffi.cast(type, scan(signature, module, offset))
+	ret[name] = ffi.cast(type, scan(name, signature, module, offset))
 end
 
 local function varscan(name, type, signature, offset, dereferences, module)
-	local addr = ffi.cast(type, scan(signature, module, offset))
+	local addr = ffi.cast(type, scan(name, signature, module, offset))
 	print("Dereferences:", dereferences)
 	for i = 0, (dereferences or 1) do
 		print("Dereferencing")

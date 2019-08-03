@@ -24,6 +24,10 @@ local T = byond.T
 local ffi = require "ffi"
 
 local compiler = require "compiler"
+
+local json = require "json"
+
+local debugger = require "debugger"
 print "hooking!"
 
 --[[ new code:
@@ -46,9 +50,9 @@ print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
 --proc.getProc("/client/verb/various"):set_breakpoint()
-local p = proc.getProcSetupInfo("/client/verb/ctest")
+local p = proc.getProcSetupInfo("/client/proc/test_opt")
 disasm.disassemble(p.bytecode, p.bytecode_len)
-local new_bytecode = {
+--[[local new_bytecode = {
 	0x33,
 	0xFFE5,
 	0x60,
@@ -76,8 +80,7 @@ p = proc.getProcSetupInfo("/client/verb/resume_paused")
 
 local new_bytecode2 = {0x1339, 0x00}
 local cnew_bytecode2 = ffi.new("int[?]", #new_bytecode2, new_bytecode2)
-p.bytecode = cnew_bytecode2
-
+p.bytecode = cnew_bytecode2]]
 --[[byond.set_breakpoint_func(
 	function(ctx)
 		print("Debug breakpoint hit!")
@@ -155,7 +158,20 @@ proc.getProc("/client/proc/typetest"):hook(
 )
 proc.getProc("/client/verb/context_test"):hook(
 	function(original, usr, src)
-		print(context.get_context().proc_state)
+		local all_procs = {}
+		for _, p in ipairs(proc.allProcs()) do
+			print(p.path)
+			local setup = proc.getProcSetupInfo(p.path)
+			print(setup.bytecode_len)
+			local disassembly = disasm.disassemble(setup.bytecode, setup.bytecode_len)
+			table.insert(all_procs, {procName = p.path, procInfo = {rows = disassembly}})
+		end
+		all_procs = json.encode(all_procs)
+		local f = io.open("\\\\.\\pipe\\DMDBG", "w")
+		f:write(all_procs)
+		f:write("\n")
+		f:flush()
+		f:close()
 	end
 )
 
@@ -171,5 +187,72 @@ proc.getProc("/client/proc/recompile"):hook(
 )
 
 print("Hooked everything")
-print(proc.getProc("/proc/conoutput").id)
+--[[print(proc.getProc("/proc/conoutput").id)
 print(proc.getProc("/proc/to_chat").id)
+print(t2t.toValue("space_1").value)
+print(t2t.toValue("space_2").value)
+print(t2t.toValue("space_3").value)
+print(t2t.toValue("space_4").value)
+for i = 0x125, 0x15C do
+	print(t2t.idx2str(i))
+end
+print(t2t.idx2str(0xA0))
+for i = 0x15D, 0x16A do
+	print(t2t.idx2str(i))
+end]]
+proc.getProc("/client/verb/receive_patch"):hook(
+	function(original, usr, src)
+		local f = io.open("\\\\.\\pipe\\dmcompiler", "r")
+		local req = json.decode(f:read())
+		compiler.patch(req["path"], req["bytecode"], req["strings"], req["local_count"])
+		proc.getProc("/proc/to_world")("<b><tt>Received patch for " .. req["path"] .. "<tt></b>")
+	end
+)
+
+ffi.cdef [[
+	__declspec(dllexport) void __cdecl pass_shit(const char** proc_names, int* proc_ids, short* varcounts, short* bytecode_lens, int** bytecodes, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr woo);
+	__declspec(dllexport) void breakpoint_hit(int* bytecode, int offset);
+]]
+
+local dmdis = ffi.load("dmdism")
+local proc_names = {}
+local proc_ids = {}
+local varcounts = {}
+local bytecode_lens = {}
+local bytecodes = {}
+v = proc.allProcs()[0] --god damn it lua
+table.insert(proc_names, v.path)
+table.insert(proc_ids, v.id)
+p = proc.getProcSetupInfo(v.path)
+table.insert(varcounts, p.local_var_count)
+table.insert(bytecode_lens, p.bytecode_len)
+table.insert(bytecodes, p.bytecode)
+for _, v in ipairs(proc.allProcs()) do
+	table.insert(proc_names, v.path)
+	table.insert(proc_ids, v.id)
+	p = proc.getProcSetupInfo(v.path)
+	table.insert(varcounts, p.local_var_count)
+	table.insert(bytecode_lens, p.bytecode_len)
+	table.insert(bytecodes, p.bytecode)
+	--if v.path == "/client/verb/patchable" then
+	--	print(p.bytecode)
+	--end
+end
+
+local lprocs = #proc_names
+proc_names = ffi.new("const char*[?]", #proc_names, proc_names)
+proc_ids = ffi.new("int[?]", #proc_ids, proc_ids)
+varcounts = ffi.new("short[?]", #varcounts, varcounts)
+bytecode_lens = ffi.new("short[?]", #bytecode_lens, bytecode_lens)
+bytecodes = ffi.new("int*[?]", #bytecodes, bytecodes)
+dmdis.pass_shit(
+	proc_names,
+	proc_ids,
+	varcounts,
+	bytecode_lens,
+	bytecodes,
+	lprocs,
+	signatures.CurrentExecutionContext,
+	signatures.GetStringTableIndexPtr
+)
+byond.set_breakpoint_func(debugger.debug_hook)

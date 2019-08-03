@@ -23,12 +23,15 @@ end
 local xvar_magic_numbers = {
 	[0xFFCD] = "USR",
 	[0xFFCE] = "SRC",
+	[0xFFCF] = "ARGS",
 	[0xFFD0] = "DOT",
 	[0xFFD9] = "ARG",
 	[0xFFDA] = "LOCAL",
 	[0xFFDB] = "GLOBAL",
 	[0xFFDC] = "SUBVAR",
 	[0xFFDD] = "CACHE",
+	[0xFFDE] = "SRCPROC",
+	[0xFFDF] = "PROC",
 	[0xFFE5] = "WORLD",
 	[0xFFE6] = "NULL"
 }
@@ -58,6 +61,11 @@ local mnemonics = {
 	[0x3D] = "ANEG",
 	[0x3E] = "ADD", --add two values
 	[0x3F] = "SUB", --subtract two values
+	[0x40] = "MUL",
+	[0x41] = "DIV",
+	[0x42] = "MOD",
+	[0x43] = "ROUND",
+	[0x44] = "ROUNDN",
 	[0x45] = "ADDIP",
 	[0x46] = "SUBIP",
 	[0x50] = "PUSHI", --push integer
@@ -72,6 +80,7 @@ local mnemonics = {
 	[0x7D] = "ISTYPE",
 	[0x84] = "DBG FILE", --set context proc file field (debug mode only)
 	[0x85] = "DBG LINENO", --set context line number (debug mode only)
+	[0xB5] = "CALLOBJ",
 	[0xBA] = "PROMPTCHECK",
 	[0xC1] = "INPUT",
 	[0xF8] = "JMP",
@@ -93,6 +102,7 @@ local arg_counts = {
 	[0x01] = 1,
 	[0x0F] = 1,
 	[0x11] = 1,
+	[0x12] = 1,
 	[0x1A] = 1,
 	[0x25] = 1,
 	[0x50] = 1,
@@ -132,14 +142,28 @@ function var_next(bytecode)
 	local sbyte = xvar_magic_numbers[byte]
 	if sbyte == "LOCAL" then
 		return {"LOCAL", tostring(table.remove(bytecode, 1))}
+	elseif sbyte == "GLOBAL" then
+		return {"GLOBAL", tostring(table.remove(bytecode, 1))}
 	elseif sbyte == "SRC" then
 		return {"SRC"}
+	elseif sbyte == "USR" then
+		return {"USR"}
+	elseif sbyte == "SRCPROC" then
+		return {"SRCPROC", tostring(table.remove(bytecode, 1))}
+	elseif sbyte == "PROC" then
+		return {"PROC", tostring(table.remove(bytecode, 1))}
 	elseif sbyte == "WORLD" then
 		return {"WORLD"}
 	elseif sbyte == "CACHE" then
 		return {"CACHE", var_next(bytecode)}
 	elseif sbyte == "SUBVAR" then
 		return {var_next(bytecode), "SUBVAR", var_next(bytecode)}
+	elseif sbyte == "ARG" then
+		return {"ARG", tostring(table.remove(bytecode, 1))}
+	elseif sbyte == "NULL" then
+		return {"NULL"}
+	elseif sbyte == "ARGS" then
+		return {"ARGS"}
 	else
 		error("UNIMPLEMENTED VAR ACCESS: 0x" .. string.format("%x", byte))
 	end
@@ -202,7 +226,8 @@ function disassemble_pushval(bytecode, offset)
 	if type == consts.String then
 		return consts.types[type]:upper(), arg_len, {bytecode[offset + 2], "(" .. t2t.idx2str(bytecode[offset + 2]) .. ")"}
 	end
-	return consts.types[type]:upper(), arg_len, {bytecode[offset + 2]}
+	local t = consts.types[type] or "UNKNOWN_TYPE"
+	return t:upper(), arg_len, {bytecode[offset + 2]}
 end
 
 function disassemble_datumcall(bytecode, offset)
@@ -259,6 +284,7 @@ function M.disassemble(bytecode, bytecode_len, start_offset)
 	--for i = 0, bytecode_len do
 	--	print(string.format("%x", bytecode[i]))
 	--end
+	local parseable_result = {}
 	while current_offset < bytecode_len do
 		local current_opcode = bytecode[current_offset]
 		local mnemonic = mnemonics[current_opcode]
@@ -269,24 +295,48 @@ function M.disassemble(bytecode, bytecode_len, start_offset)
 			mnemonic_mod, arg_count, pretty_args = vararg_dis(bytecode, current_offset)
 			local out
 			if mnemonic_mod then
-				out = {current_offset, "|", mnemonic, mnemonic_mod, table.concat(pretty_args or {}, " ")}
+				out = {
+					BP = "",
+					isCurrent = "",
+					Offset = current_offset,
+					Bytes = "",
+					Mnemonic = mnemonic .. " " .. mnemonic_mod,
+					Comment = table.concat(pretty_args or {}, " ")
+				}
 			else
-				out = {current_offset, "|", mnemonic, table.concat(pretty_args or {}, " ")}
+				out = {
+					BP = "",
+					isCurrent = "",
+					Offset = current_offset,
+					Bytes = "",
+					Mnemonic = mnemonic,
+					Comment = table.concat(pretty_args or {}, " ")
+				}
 			end
-			print(table.concat(out, " "))
+			print(table.concat({out.Mnemonic, out.Comment}, " "))
 			current_offset = current_offset + arg_count
+			table.insert(parseable_result, out)
 		else
 			arg_count = arg_counts[current_opcode] or 0
 			local pretty_args = {}
 			for i = 1, arg_count do
 				table.insert(pretty_args, bytecode[current_offset + i])
 			end
-			local out = {current_offset, "|", mnemonic, table.concat(pretty_args, " ")}
-			print(table.concat(out, " "))
+			local out = {
+				BP = "",
+				isCurrent = "",
+				Offset = current_offset,
+				Bytes = "",
+				Mnemonic = mnemonic,
+				Comment = table.concat(pretty_args, " ")
+			}
+			print(table.concat({out.Mnemonic, out.Comment}, " "))
 			current_offset = current_offset + arg_count
+			table.insert(parseable_result, out)
 		end
 		current_offset = current_offset + 1
 	end
+	return parseable_result
 end
 
 function M.get_next_instruction_offset(bytecode, offset)

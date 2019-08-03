@@ -10,20 +10,12 @@ M.replaced_offset = 0
 M.suspended_proc = nil
 M.suspended_replaced_opcode = 0x1338
 
+M.dmdis = ffi.load("dmdism")
+
 function M.debug_hook(ctx)
-	local bytecode = ctx.bytecode
-	bytecode[M.replaced_offset] = M.replaced_opcode
-	--dis.disassemble(bytecode, M.bytecode_len, M.replaced_offset)
-	--M.replaced_offset = dis.get_next_instruction_offset(bytecode, M.replaced_offset)
-	print("Next instruction to replace is at offset", M.replaced_offset)
-	if M.replaced_offset >= M.bytecode_len then
-		print("Stepped through everything!")
-		ctx.current_opcode = ctx.current_opcode - 1
-		return
-	end
-	ctx.current_opcode = ctx.current_opcode - 1
-	M.replaced_opcode = bytecode[M.replaced_offset]
-	bytecode[M.replaced_offset] = 0x1337
+	print(ctx.bytecode)
+	print(ctx.current_opcode)
+	M.dmdis.breakpoint_hit(ctx.bytecode, ctx.current_opcode)
 end
 
 function M.suspend_current_proc(ctx)

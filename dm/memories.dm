@@ -106,6 +106,8 @@ var/datum/access_test/test
 	while(x > 0)
 		world << x
 		x--
+/client/proc/ptest(x)
+	//asdasd
 /client/proc/typetest(datum/type/testing/datum/D, mob/type/testing/mob/M, obj/type/testing/obj/O)
 	world << "do not optimize me out"
 /client/verb/happy_proc()
@@ -196,3 +198,36 @@ var/init_res = ""
 
 /proc/to_world(x)
 	world << x
+
+/mob/proc/test()
+	world << "base"
+
+/mob/override/test()
+	world << "override"
+
+/client/verb/receive_patch()
+	set category = "compiler"
+	//hooked by lunar
+
+/client/verb/patchable()
+	set category = "compiler"
+	world << "Heck"
+
+/client/proc/test_opt()
+	var/x = 5 + 5
+	world << x/1
+	var/q = input() as num
+	world << q/1
+
+/client/verb/test_arguments()
+	test_arguments_p("You happy now?", 1)
+
+/client/proc/test_arguments_p()
+	var/x=1
+	var/y=2
+	world << x
+	world << y
+
+/client/verb/showcase_subvars()
+	var/obj/O = new
+	to_chat(world, O.name)
