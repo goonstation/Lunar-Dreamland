@@ -4,7 +4,7 @@
 
 enum Opcode
 {
-	RETN = 0x00,
+	END = 0x00,
 	NEW = 0x01,
 	OUTPUT = 0x03,
 	TEST = 0x0D,
@@ -46,19 +46,27 @@ enum Opcode
 	PUSHVAL = 0x60,
 	INC = 0x66,
 	DEC = 0x67,
+	FINDTEXT = 0x6F,
 	LISTGET = 0x7B,
 	ISTYPE = 0x7D,
 	DBG_FILE = 0x84,
 	DBG_LINENO = 0x85,
+	ISNULL = 0x9E,
 	CALLNAME = 0xB5,
 	PROMPTCHECK = 0xBA,
 	INPUT_ = 0xC1, //INPUT without underscore was already defined in some windows header
+	ICON_NEW = 0xDE,
 	JMP2 = 0xF8,
 	JNZ = 0xFA,
 	POPN = 0xFB,
 	CHECKNUM = 0xFC,
+	FOR_RANGE = 0xFD,
 	MD5 = 0x109,
 	CALL_LIB = 0x116,
+	ICON_BLEND = 0x119,
+	MATRIX_NEW = 0x12A,
+	REPLACETEXT = 0x130,
+	REGEX_NEW = 0x13A,
 	DBG_BREAK = 0x1337,
 };
 
@@ -125,7 +133,7 @@ const std::unordered_map<DataType, std::string> datatype_names = {
 };
 
 const std::unordered_map<Opcode, std::string> mnemonics = {
-	{RETN, "RETN"},
+	{END, "END"},
 	{NEW, "NEW"},
 	{OUTPUT, "OUTPUT"},
 	{TEST, "TEST"},
@@ -167,18 +175,26 @@ const std::unordered_map<Opcode, std::string> mnemonics = {
 	{PUSHVAL, "PUSHVAL"},
 	{INC, "INC"},
 	{DEC, "DEC"},
+	{FINDTEXT, "FINDTEXT"},
 	{LISTGET, "LISTGET"},
 	{ISTYPE, "ISTYPE"},
 	{DBG_FILE, "DBG FILE"},
 	{DBG_LINENO, "DBG LINENO"},
+	{ISNULL, "ISNULL"},
 	{CALLNAME, "CALLNAME"},
 	{PROMPTCHECK, "PROMPTCHECK"},
 	{INPUT_, "INPUT"},
+	{ICON_NEW, "ICON_NEW"},
 	{JMP2, "JMP"},
 	{JNZ, "JNZ"},
 	{POPN, "POPN"},
 	{CHECKNUM, "CHECKNUM"},
+	{FOR_RANGE, "FOR_RANGE"},
 	{MD5, "MD5"},
-	{CALL_LIB, "CALL LIB"},
+	{CALL_LIB, "CALL_LIB"},
+	{ICON_BLEND, "ICON_BLEND"},
+	{MATRIX_NEW, "MATRIX_NEW"},
+	{REPLACETEXT, "REPLACETEXT"},
+	{REGEX_NEW, "REGEX_NEW"},
 	{DBG_BREAK, "DBG BREAK"},
 };

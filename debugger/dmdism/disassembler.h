@@ -50,7 +50,7 @@ public:
 };
 
 const std::vector<Opcode> zero_argument_opcodes = {
-	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP, ISTYPE
+	RET, END, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP, ISTYPE, ISNULL, FINDTEXT, REPLACETEXT
 };
 
 const std::unordered_map<Opcode, int> simple_argument_counts = {
@@ -61,13 +61,21 @@ const std::unordered_map<Opcode, int> simple_argument_counts = {
 	{SPAWN, 1},
 	{CALLPATH, 1},
 	{PUSHI, 1},
+	{ITERLOAD, 2},
 	{LOCATE, 1},
+	{INC, 1},
+	{DEC, 1},
 	{CALLNAME, 1},
 	{INPUT_, 3},
+	{ICON_NEW, 1},
 	{JMP2, 1},
 	{JNZ, 1},
 	{POPN, 1},
-	{CALL_LIB, 1}
+	{FOR_RANGE, 2},
+	{CALL_LIB, 1},
+	{ICON_BLEND, 2},
+	{MATRIX_NEW, 1},
+	{REGEX_NEW, 1}
 };
 
 const std::vector<Opcode> variable_accessors = {
