@@ -93,20 +93,14 @@ namespace debugger
 				JsonConvert.DeserializeObject<List<string>>(JsonConvert.DeserializeObject<Message>(line).content);
 			data = data.OrderBy(o => o).ToList();
 
-
-			procList.BeginUpdate();
-			foreach (string name in data)
-			{
-				ProcEntry proc = new ProcEntry();
-				proc.name = name;
-				proc.disassembly = null;
-				procNames.Add(name);
-				procList.Items.Add(name);
-				procInfos.Add(name, proc);
-				//MessageBox.Show(procInfos[proc.procName].ToString());
-			}
-
-			procList.EndUpdate();
+            if(procList.InvokeRequired)
+            {
+                procList.Invoke(new Action(() => update_proclist(data)));
+            }
+            else
+            {
+                update_proclist(data);
+            }
 
 			disassembly.DefaultCellStyle.SelectionForeColor = Color.Black;
 			disassembly.DefaultCellStyle.SelectionBackColor = Color.LightGray;
@@ -115,14 +109,34 @@ namespace debugger
 			ready = true;
 		}
 
+        public void update_proclist(List<string> data)
+        {
+            procList.BeginUpdate();
+            foreach (string name in data)
+            {
+                ProcEntry proc = new ProcEntry();
+                proc.name = name;
+                proc.disassembly = null;
+                procNames.Add(name);
+                procList.Items.Add(name);
+                procInfos.Add(name, proc);
+                //MessageBox.Show(procInfos[proc.procName].ToString());
+            }
+
+            procList.EndUpdate();
+        }
+
 		public void receive_data()
 		{
 			while (true)
 			{
-				//MessageBox.Show("Reading");
-				//writer.Write("ignore\n");
-				//writer.Flush();
-				Message msg = JsonConvert.DeserializeObject<Message>(reader.ReadLine());
+                string strMsg = reader.ReadLine();
+                if (string.IsNullOrEmpty(strMsg))
+                    continue;
+                //MessageBox.Show("Reading");
+                //writer.Write("ignore\n");
+                //writer.Flush();
+                Message msg = JsonConvert.DeserializeObject<Message>(strMsg);
 				//MessageBox.Show(line);
 				if (msg.type == "disassembly")
 				{
@@ -338,7 +352,7 @@ namespace debugger
 
 		private void procList_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (!ready)
+			if (!ready || procList.SelectedIndex == -1)
 			{
 				return;
 			}
@@ -408,5 +422,24 @@ namespace debugger
 
 			}
 		}
-	}
+
+        private void searchText_TextChanged(object sender, EventArgs e)
+        {
+            if (!ready)
+            {
+                return;
+            }
+            procList.BeginUpdate();
+            procList.Items.Clear();
+            if (searchText.Text.Length == 0)
+            {
+                procList.Items.AddRange(procNames.ToArray());
+                procList.EndUpdate();
+                return;
+            }
+            procList.Items.AddRange(
+                procNames.Where(i => i.Contains(searchText.Text)).ToArray());
+            procList.EndUpdate();
+        }
+    }
 }

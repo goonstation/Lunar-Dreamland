@@ -20,7 +20,7 @@ class Disassembler
 
 	std::vector<Opcode> bytecode;
 	std::vector<ProcInfo>& procs;
-	int current_offset = 0;
+	unsigned int current_offset = 0;
 	std::vector<Instruction> instructions;
 	Opcode last_opcode;
 
@@ -48,7 +48,7 @@ public:
 };
 
 const std::vector<Opcode> zero_argument_opcodes = {
-	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT
+	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP
 };
 
 const std::unordered_map<Opcode, int> simple_argument_counts = {
@@ -57,14 +57,17 @@ const std::unordered_map<Opcode, int> simple_argument_counts = {
 	{JZ, 1},
 	{NLIST, 1},
 	{SPAWN, 1},
+	{CALLPATH, 1},
 	{PUSHI, 1},
 	{LOCATE, 1},
 	{DBG_FILE, 1},
 	{DBG_LINENO, 1},
+	{CALLNAME, 1},
 	{INPUT_, 3},
 	{JMP2, 1},
 	{JNZ, 1},
-	{POPN, 1}
+	{POPN, 1},
+	{CALL_LIB, 1}
 };
 
 const std::vector<Opcode> variable_accessors = {
