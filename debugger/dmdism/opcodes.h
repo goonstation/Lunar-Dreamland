@@ -103,6 +103,7 @@ enum DataType
 	DATUM = 0x21,
 	SAVEFILE = 0x23,
 	NUMBER = 0x2A,
+	CLIENTTYPE = 0x3B
 };
 
 const std::unordered_map<DataType, std::string> datatype_names = {
@@ -120,6 +121,7 @@ const std::unordered_map<DataType, std::string> datatype_names = {
 	{ DATUM, "DATUM" },
 	{ SAVEFILE, "SAVEFILE" },
 	{ NUMBER, "NUMBER" },
+	{ CLIENTTYPE, "CLIENTTYPE" }
 };
 
 const std::unordered_map<Opcode, std::string> mnemonics = {

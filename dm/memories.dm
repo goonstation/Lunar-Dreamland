@@ -290,3 +290,6 @@ var/init_res = ""
 	call(dyn_callback)("Dyn call 1")
 	call(src, "dyn_callback")("Dyn call 2")
 	call("test.dll", "func")("Dyn call 3")
+
+client/verb/istypetest()
+	istype(src, /client)

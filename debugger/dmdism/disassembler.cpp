@@ -84,6 +84,10 @@ Instruction Disassembler::disassemble_next()
 		return disassemble_call();
 	case CALLGLOB:
 		return disassemble_global_call();
+	case DBG_FILE:
+		return disassemble_debug_file();
+	case DBG_LINENO:
+		return disassemble_debug_line();
 	}
 	return disassemble_unknown();
 }
@@ -236,9 +240,23 @@ Instruction Disassembler::disassemble_global_call()
 	return instr;
 }
 
+Instruction Disassembler::disassemble_debug_file()
+{
+	Instruction instr = prepare_instruction();
+	Opcode file = eat_add(instr);
 
+	instr.comment = "Source file: \"" + byond_tostring(file) + "\"";
+	return instr;
+}
 
+Instruction Disassembler::disassemble_debug_line()
+{
+	Instruction instr = prepare_instruction();
+	Opcode line = eat_add(instr);
 
+	instr.comment = "Line number: " + todec(line);
+	return instr;
+}
 
 
 Opcode Disassembler::peek()

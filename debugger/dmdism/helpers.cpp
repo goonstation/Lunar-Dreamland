@@ -13,3 +13,9 @@ std::string tohex(int numero) {
 	stream << std::hex << std::uppercase << numero;
 	return "0x" + std::string(stream.str());
 }
+
+std::string todec(int numero) {
+	std::stringstream stream;
+	stream << std::dec << numero;
+	return std::string(stream.str());
+}

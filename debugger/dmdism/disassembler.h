@@ -37,6 +37,8 @@ class Disassembler
 	Instruction disassemble_pushval();
 	Instruction disassemble_call();
 	Instruction disassemble_global_call();
+	Instruction disassemble_debug_file();
+	Instruction disassemble_debug_line();
 
 	Opcode peek();
 	Opcode eat();
@@ -48,7 +50,7 @@ public:
 };
 
 const std::vector<Opcode> zero_argument_opcodes = {
-	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP
+	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP, ISTYPE
 };
 
 const std::unordered_map<Opcode, int> simple_argument_counts = {
@@ -60,8 +62,6 @@ const std::unordered_map<Opcode, int> simple_argument_counts = {
 	{CALLPATH, 1},
 	{PUSHI, 1},
 	{LOCATE, 1},
-	{DBG_FILE, 1},
-	{DBG_LINENO, 1},
 	{CALLNAME, 1},
 	{INPUT_, 3},
 	{JMP2, 1},
