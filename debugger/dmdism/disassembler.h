@@ -1,0 +1,74 @@
+#pragma once
+#include "stdafx.h"
+#include <string>
+#include <vector>
+#include "opcodes.h"
+#include "byond_structures.h"
+#include <map>
+#include <unordered_map>
+
+struct Instruction
+{
+	int offset;
+	std::string bytes;
+	std::string mnemonic;
+	std::string comment;
+};
+
+class Disassembler
+{
+
+	std::vector<Opcode> bytecode;
+	std::vector<ProcInfo>& procs;
+	int current_offset = 0;
+	std::vector<Instruction> instructions;
+	Opcode last_opcode;
+
+	Instruction prepare_instruction();
+	void add_var_disassembly(Instruction& instr);
+	void add_call_args(Instruction& instr, int count);
+
+	Instruction disassemble_next();
+	Instruction disassemble_simple();
+	Instruction disassemble_unknown();
+	Instruction disassemble_zeroarg();
+	Instruction disassemble_var();
+	Instruction disassemble_variable_access();
+	Instruction disassemble_pushval();
+	Instruction disassemble_call();
+	Instruction disassemble_global_call();
+
+	Opcode peek();
+	Opcode eat();
+	Opcode eat_add(Instruction& instr);
+
+public:
+	Disassembler(std::vector<int> bc, std::vector<ProcInfo>& ps);
+	std::vector<Instruction> disassemble();
+};
+
+const std::vector<Opcode> zero_argument_opcodes = {
+	RET, RETN, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT
+};
+
+const std::unordered_map<Opcode, int> simple_argument_counts = {
+	{NEW, 1},
+	{JMP, 1},
+	{JZ, 1},
+	{NLIST, 1},
+	{SPAWN, 1},
+	{PUSHI, 1},
+	{LOCATE, 1},
+	{DBG_FILE, 1},
+	{DBG_LINENO, 1},
+	{INPUT_, 3},
+	{JMP2, 1},
+	{JNZ, 1},
+	{POPN, 1}
+};
+
+const std::vector<Opcode> variable_accessors = {
+	SETVAR, GETVAR, AUGADD, AUGSUB
+};
+
+std::string tohex(int numero);
