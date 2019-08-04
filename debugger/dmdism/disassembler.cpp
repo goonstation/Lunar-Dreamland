@@ -88,6 +88,8 @@ Instruction Disassembler::disassemble_next()
 		return disassemble_debug_file();
 	case DBG_LINENO:
 		return disassemble_debug_line();
+	case OUTPUT_FORMAT:
+		return disassemble_foutput();
 	}
 	return disassemble_unknown();
 }
@@ -140,10 +142,10 @@ Instruction Disassembler::disassemble_var()
 		Instruction subexpr = disassemble_var();
 		res.bytes += subexpr.bytes;
 		res.mnemonic += subexpr.mnemonic;
+		res.comment += subexpr.comment;
 		val = eat();
 		res.bytes += " " + tohex(val);
 		res.mnemonic += " " + std::to_string(val);
-		res.comment += subexpr.comment;
 		res.comment += ".";
 		res.comment += byond_tostring(val);
 		return res;
@@ -193,9 +195,11 @@ Instruction Disassembler::disassemble_pushval()
 			int i; float f;
 		} funk;
 		funk f;
-		f.i = eat();
-		instr.bytes += " " + tohex(f.i);
-		instr.bytes += " " + tohex(eat());
+		Opcode first_part = eat();
+		Opcode second_part = eat();
+		f.i = first_part << 16 | second_part; //32 bit floats are split into two 16 bit halves in the bytecode. Cool right?
+		instr.bytes += " " + tohex(first_part);
+		instr.bytes += " " + tohex(second_part);
 		instr.mnemonic += " NUMBER " + tohex(f.i);
 		instr.comment = std::to_string(f.f);
 		return instr;
@@ -255,6 +259,30 @@ Instruction Disassembler::disassemble_debug_line()
 	Opcode line = eat_add(instr);
 
 	instr.comment = "Line number: " + todec(line);
+	return instr;
+}
+
+Instruction Disassembler::disassemble_foutput()
+{
+	Instruction instr = prepare_instruction();
+	Opcode str_id = eat_add(instr);
+	eat_add(instr);
+	std::string woop = byond_tostring(str_id);
+	instr.comment = '"';
+	int bruh = 0;
+	for (char& c : woop)
+	{
+		if (c == -1)
+		{
+			instr.comment += "[STACK" + std::to_string(bruh) + "]";
+			bruh++;
+		}
+		else
+		{
+			instr.comment += c;
+		}
+	}
+	instr.comment += '"';
 	return instr;
 }
 

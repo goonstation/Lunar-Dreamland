@@ -79,6 +79,7 @@ std::string totypename(int typeno)
 
 void send_message(std::string type, nlohmann::json content)
 {
+	//std::cout << "Sending " << content << std::endl;
 	nlohmann::json message;
 	message["type"] = type;
 	message["content"] = content.dump();

@@ -39,6 +39,7 @@ class Disassembler
 	Instruction disassemble_global_call();
 	Instruction disassemble_debug_file();
 	Instruction disassemble_debug_line();
+	Instruction disassemble_foutput();
 
 	Opcode peek();
 	Opcode eat();
