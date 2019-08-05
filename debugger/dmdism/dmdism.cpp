@@ -2,18 +2,19 @@
 //
 
 #include "stdafx.h"
-#include <map>
-#include "byond_structures.h"
+
 #include <iostream>
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include "json.hpp"
 #include <thread>
-#include "disassembler.h"
+#include <string>
+#include <vector>
+#include <unordered_map>
 #include <iomanip>
 #include <sstream>
 #include <algorithm>
+
+#include "byond_structures.h"
+#include "json.hpp"
+#include "disassembler.h"
 #include "helpers.h"
 
 std::vector<ProcArrayEntry> proc_array;
@@ -59,11 +60,11 @@ std::vector<Instruction> disassemble(std::string name)
 		return disassemblies.at(name);
 	}
 	ProcInfo proc = proc_information[name];
-	std::vector<int> a;
+	std::vector<uint32_t> a;
 	for (int i = 0; i < proc.bytecode_length; i++) {
 		a.push_back(proc.bytecode[i]);
 	}
-	std::vector<Instruction> instructions = Disassembler(a, procs).disassemble();
+	auto instructions = Disassembler(a, procs).disassemble();
 	disassemblies[name] = instructions;
 	return instructions;
 }
@@ -110,10 +111,10 @@ void send_disassembly(std::string procName)
 		nlohmann::json dong;
 		dong["BP"] = "";
 		dong["isCurrent"] = "";
-		dong["Offset"] = i.offset;
-		dong["Bytes"] = i.bytes;
-		dong["Mnemonic"] = i.mnemonic;
-		dong["Comment"] = i.comment;
+		dong["Offset"] = i.offset();
+		dong["Bytes"] = i.bytes_str();
+		dong["Mnemonic"] = i.opcode().tostring();
+		dong["Comment"] = i.comment();
 		disassembly.push_back(dong);
 	}
 	send_message("disassembly", disassembly);
@@ -138,9 +139,9 @@ int get_next_instruction_offset(ProcInfo proc, int current_offset)
 	std::vector<Instruction> disassembly = disassemble(proc.name);
 	for(unsigned int i = 0; i < disassembly.size(); i++)
 	{
-		if(disassembly[i].offset == current_offset)
+		if(disassembly[i].offset() == current_offset)
 		{
-			return disassembly[i + 1].offset;
+			return disassembly[i + 1].offset();
 		}
 	}
 

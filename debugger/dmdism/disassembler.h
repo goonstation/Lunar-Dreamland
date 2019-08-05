@@ -1,86 +1,26 @@
 #pragma once
-#include "stdafx.h"
-#include <string>
-#include <vector>
-#include "opcodes.h"
-#include "byond_structures.h"
-#include <map>
-#include <unordered_map>
 
-struct Instruction
-{
-	int offset;
-	std::string bytes;
-	std::string mnemonic;
-	std::string comment;
-};
+#include "stdafx.h"
+#include <vector>
+
+#include "byond_structures.h"
+#include "instruction.h"
+
+class Context;
 
 class Disassembler
 {
-
-	std::vector<Opcode> bytecode;
-	std::vector<ProcInfo>& procs;
-	unsigned int current_offset = 0;
-	std::vector<Instruction> instructions;
-	Opcode last_opcode;
-
-	Instruction prepare_instruction();
-	void add_var_disassembly(Instruction& instr);
-	void add_call_args(Instruction& instr, int count);
-
-	Instruction disassemble_next();
-	Instruction disassemble_simple();
-	Instruction disassemble_unknown();
-	Instruction disassemble_zeroarg();
-	Instruction disassemble_var();
-	Instruction disassemble_variable_access();
-	Instruction disassemble_pushval();
-	Instruction disassemble_call();
-	Instruction disassemble_global_call();
-	Instruction disassemble_debug_file();
-	Instruction disassemble_debug_line();
-	Instruction disassemble_foutput();
-
-	Opcode peek();
-	Opcode eat();
-	Opcode eat_add(Instruction& instr);
-
 public:
-	Disassembler(std::vector<int> bc, std::vector<ProcInfo>& ps);
+	Disassembler(std::vector<std::uint32_t> bc, std::vector<ProcInfo>& ps);
 	std::vector<Instruction> disassemble();
-};
 
-const std::vector<Opcode> zero_argument_opcodes = {
-	RET, END, TEST, TEQ, TNE, TL, TG, TLE, TGE, ANEG, NOT, ADD, SUB, MUL, DIV, MOD, ROUND, POP, ITERNEXT, LISTGET, PROMPTCHECK, CHECKNUM, MD5, OUTPUT, CALLPARENT, SLEEP, ISTYPE, ISNULL, FINDTEXT, REPLACETEXT
-};
+	Context* context() const { return context_; }
 
-const std::unordered_map<Opcode, int> simple_argument_counts = {
-	{NEW, 1},
-	{JMP, 1},
-	{JZ, 1},
-	{NLIST, 1},
-	{SPAWN, 1},
-	{CALLPATH, 1},
-	{PUSHI, 1},
-	{ITERLOAD, 2},
-	{LOCATE, 1},
-	{INC, 1},
-	{DEC, 1},
-	{CALLNAME, 1},
-	{INPUT_, 3},
-	{ICON_NEW, 1},
-	{JMP2, 1},
-	{JNZ, 1},
-	{POPN, 1},
-	{FOR_RANGE, 2},
-	{CALL_LIB, 1},
-	{ICON_BLEND, 2},
-	{MATRIX_NEW, 1},
-	{REGEX_NEW, 1}
-};
+	void disassemble_var(Instruction& instr);
+	void add_call_args(Instruction& instr, unsigned int num_args);
 
-const std::vector<Opcode> variable_accessors = {
-	SETVAR, GETVAR, AUGADD, AUGSUB
+private:
+	Context* context_;
+	
+	Instruction disassemble_next();
 };
-
-std::string tohex(int numero);
