@@ -291,5 +291,13 @@ var/init_res = ""
 	call(src, "dyn_callback")("Dyn call 2")
 	call("test.dll", "func")("Dyn call 3")
 
-client/verb/istypetest()
+/client/verb/istypetest()
 	istype(src, /client)
+
+/client/verb/add_test()
+	return 1 + 2
+
+/client/verb/format_test()
+	var/x = 1
+	var/y = 2
+	world << "hello world -> [x] [y]"

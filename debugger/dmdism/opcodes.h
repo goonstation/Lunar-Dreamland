@@ -1,9 +1,10 @@
 #pragma once
-#include <map>
+
 #include <unordered_map>
 
-enum Opcode
+enum Bytecode
 {
+	UNK = -1,
 	END = 0x00,
 	NEW = 0x01,
 	OUTPUT = 0x03,
@@ -111,6 +112,7 @@ enum DataType
 	WORLD_D = 0x0E,
 	DATUM = 0x21,
 	SAVEFILE = 0x23,
+	PATH_LIST = 0x28,
 	NUMBER = 0x2A,
 	CLIENTTYPE = 0x3B
 };
@@ -129,11 +131,13 @@ const std::unordered_map<DataType, std::string> datatype_names = {
 	{ WORLD_D, "WORLD" },
 	{ DATUM, "DATUM" },
 	{ SAVEFILE, "SAVEFILE" },
+	{ PATH_LIST, "PATH_LIST" },
 	{ NUMBER, "NUMBER" },
 	{ CLIENTTYPE, "CLIENTTYPE" }
 };
 
-const std::unordered_map<Opcode, std::string> mnemonics = {
+const std::unordered_map<Bytecode, std::string> mnemonics = {
+	{UNK, "???"},
 	{END, "END"},
 	{NEW, "NEW"},
 	{OUTPUT, "OUTPUT"},

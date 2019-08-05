@@ -120,6 +120,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;DMDISM_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>
+      </LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,18 +150,37 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="byond_structures.h" />
+    <ClInclude Include="callbacks.h" />
+    <ClInclude Include="context.h" />
     <ClInclude Include="disassembler.h" />
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="instruction.h" />
+    <ClInclude Include="instr_basics.h" />
+    <ClInclude Include="instr_builtins.h" />
+    <ClInclude Include="instr_control_flow.h" />
+    <ClInclude Include="instr_debug.h" />
+    <ClInclude Include="instr_icon.h" />
+    <ClInclude Include="instr_input.h" />
+    <ClInclude Include="instr_math.h" />
+    <ClInclude Include="instr_matrix.h" />
+    <ClInclude Include="instr_text.h" />
     <ClInclude Include="json.h" />
+    <ClInclude Include="opcode.h" />
     <ClInclude Include="opcodes.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="context.cpp" />
     <ClCompile Include="disassembler.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dmdism.cpp" />
     <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="instruction.cpp" />
+    <ClCompile Include="instr_basics.cpp" />
+    <ClCompile Include="instr_control_flow.cpp" />
+    <ClCompile Include="instr_debug.cpp" />
+    <ClCompile Include="instr_text.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
