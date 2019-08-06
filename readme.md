@@ -13,8 +13,8 @@ proc.getProc("/proc/showcase"):hook(
 		name = name:gsub(" ", "_")
 		proc.getProc("/proc/to_chat")(datum.world, name)
 		some_datum.name = name
-		name.listvar:append("Hello, world!")
-		name.listvar["key"] = "value"
+		some_datum.listvar:append("Hello, world!")
+		some_datum.listvar["key"] = "value"
 		some_datum:invoke("gib", 1, 2, 3)
 	end
 )
