@@ -53,6 +53,16 @@ namespace debugger
 
 		private int current_instruction = 0;
 
+		private void send_message(string type, object content = null)
+		{
+			Dictionary<string, object> message = new Dictionary<string, object>();
+			message["type"] = type;
+			message["content"] = content;
+			string msg = JsonConvert.SerializeObject(message);
+			writer.Write(msg + "\n");
+			writer.Flush();
+		}
+
 		public DMDBG()
 		{
 			InitializeComponent();
@@ -84,8 +94,7 @@ namespace debugger
 			debuggerPipeReadable.Connect();
 			reader = new StreamReader(debuggerPipeReadable);
 			writer = new StreamWriter(debuggerPipeWritable);
-			writer.Write("Proc list please\n");
-			writer.Flush();
+			send_message("Proc list please");
 			status.Text = "Receiving proc list...";
 			string line = reader.ReadLine();
 			//MessageBox.Show(line);
@@ -305,8 +314,10 @@ namespace debugger
 					pir.BP = "X";
 				}
 				string name = procList.Items[procList.SelectedIndex].ToString();
-				writer.Write("b"+name+","+pir.Offset+"\n");
-				writer.Flush();
+				Dictionary<string, object> cont = new Dictionary<string, object>();
+				cont["proc_name"] = name;
+				cont["offset"] = pir.Offset;
+				send_message("set_breakpoint", cont);
 			}
 		}
 
@@ -343,8 +354,8 @@ namespace debugger
 			{
 				return;
 			}
-			writer.Write("s\n");
-			writer.Flush();
+
+			send_message("step");
 		}
 
 		ManualResetEvent oSignalEvent = new ManualResetEvent(false);
@@ -359,8 +370,7 @@ namespace debugger
 			string name = procList.Items[procList.SelectedIndex].ToString();
 			if (procInfos[name].disassembly == null)
 			{
-				writer.Write("d" + name + "\n");
-				writer.Flush();
+				send_message("disassembly", name);
 				oSignalEvent.WaitOne();
 				oSignalEvent.Reset();
 				procInfos[name].disassembly = fuck;
@@ -396,8 +406,8 @@ namespace debugger
 			{
 				return;
 			}
-			writer.Write("r\n");
-			writer.Flush();
+
+			send_message("resume");
 		}
 
 		private void disassembly_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)

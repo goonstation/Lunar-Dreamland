@@ -340,26 +340,26 @@ void run_debugger()
 		}
 		std::cout << "Read" << std::endl;
 		std::cout << message << std::endl;
-		if(message[0] == 'd')
+		nlohmann::json msg = nlohmann::json::parse(message);
+		std::string request_type = msg["type"];
+		if(request_type == "disassembly")
 		{
-			message.erase(0, 1);
-			send_disassembly(message);
+			send_disassembly(msg["content"]);
 		}
-		else if(message[0] == 'b')
+		else if(request_type == "set_breakpoint")
 		{
-			message.erase(0, 1);
-			std::vector<std::string> parts = split(message, ',');
-			set_breakpoint(parts[0], std::stoi(parts[1]));
+			unsigned int offset = msg["content"]["offset"];
+			set_breakpoint(msg["content"]["proc_name"], offset);
 		}
-		else if(message[0] == 's')
+		else if(request_type == "step")
 		{
 			step();
 		}
-		else if (message[0] == 'r')
+		else if (request_type == "resume")
 		{
 			resume();
 		}
-		else if(message == "Proc list please")
+		else if(request_type == "Proc list please")
 		{
 			send_proc_list();
 		}
