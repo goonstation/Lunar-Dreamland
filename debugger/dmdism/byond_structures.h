@@ -1,6 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <optional>
+#include <iostream>
+#include <map>
+#include <unordered_map>
 
 struct String
 {
@@ -37,7 +41,7 @@ typedef struct ProcArrayEntry {
 
 struct ExecutionContext;
 
-struct ProcConstants { //rename this
+struct ProcConstants {
 	int proc_id;
 	int unknown2;
 	Value src;
@@ -95,21 +99,59 @@ struct ProcSetupEntry {
 	int unknown;
 };
 
-extern std::vector<ProcArrayEntry> proc_array;
+extern ProcArrayEntry* proc_array;
 extern ExecutionContext** current_context_pointer;
 
+typedef unsigned int(*GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
 typedef String*(*GetStringTableIndexPtr)(int stringId);
 
 extern GetStringTableIndexPtr getStringRaw;
+extern GetStringTableIndex getStringIndex;
+
+struct ProcInfo;
+extern ProcSetupEntry** setup_entries;
+extern std::unordered_map<int*, ProcInfo> bytecode_to_proc_lol;
 
 struct ProcInfo
 {
 	std::string name;
 	unsigned int id;
-	short local_var_count;
-	short bytecode_length;
+	unsigned short local_var_count;
+	unsigned short bytecode_length;
+private:
 	int* bytecode;
+public:
+	unsigned int varcount_idx;
+	unsigned int bytecode_idx;
 	bool operator< (const ProcInfo &other) const {
 		return id < other.id;
+	}
+
+	unsigned short get_varcount() const
+	{
+		return setup_entries[varcount_idx]->local_var_count;
+	}
+
+	void set_varcount(short new_varcount) const
+	{
+		setup_entries[varcount_idx]->local_var_count = 12;
+	}
+
+	unsigned short get_bytecode_length() const
+	{
+		return setup_entries[bytecode_idx]->bytecode_length;
+	}
+
+	int* get_bytecode() const
+	{
+		std::cout << bytecode_idx << std::endl;
+		return setup_entries[bytecode_idx]->bytecode;
+	}
+
+	void set_bytecode(std::vector<int>* new_bytecode)
+	{
+		setup_entries[bytecode_idx]->bytecode = new_bytecode->data();
+		setup_entries[bytecode_idx]->bytecode_length = (short)new_bytecode->size();
+		bytecode_to_proc_lol[setup_entries[bytecode_idx]->bytecode] = *this;
 	}
 };

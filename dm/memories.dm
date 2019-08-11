@@ -49,11 +49,30 @@
 
 /datum/access_test
 	var/name = "xd"
+	var/notbuiltinvar = 1
+	var/notbuiltinvar2 = 1
+	var/notbuiltinvar3 = 1
+	var/notbuiltinvar4 = 1
+	var/notbuiltinvar5 = 1
+	var/notbuiltinvar6 = 1
+	var/notbuiltinvar7 = 1
+	var/notbuiltinvar8 = 1
+	var/notbuiltinvar9 = 1
+	var/notbuiltinvar10 = 1
+	var/notbuiltinvar11 = 1
 
 var/datum/access_test/test
 
+/proc/peinis(x, y, z)
+	world << "peinis"
+	world << x
+	world << y
+	world << z
+
 /client/verb/access_datum_var()
 	world << test.name
+	world << src.key
+	world << test.notbuiltinvar5
 
 /client/verb/print_list()
 	for(var/e in listvar)
@@ -64,6 +83,8 @@ var/datum/access_test/test
 
 /client/proc/proccall_print(sth)
 	src << sth
+
+/client/verb/test_read()
 
 /client/verb/istypespeed()
 	var/mob/type/testing/mob/mtest/M = new
@@ -79,9 +100,13 @@ var/datum/access_test/test
 
 /client/proc/read_test(mob/M)
 	var/dong
+	var/time = world.time
+	var/mob/type/testing/mob/mtest/M2 = new
 	for(var/i=1 to 100000)
-		dong = M:notbuiltinvar
-	//world << dong
+		dong = M.name
+		dong = M2.name
+	world << dong
+	world << world.time - time
 	world << "done"
 
 /client/proc/set_test(mob/M)
@@ -94,6 +119,9 @@ var/datum/access_test/test
 	name = "mobtest"
 	var/notbuiltinvar = 1
 	var/list/asdf = list("ayy" = "lmao")
+
+/mob/type/testing/mob/mtest/proc/meme()
+	world << "Src is now a mob, woot"
 
 /obj/type/testing/obj/otest
 
@@ -123,6 +151,8 @@ var/datum/access_test/test
 
 /client/verb/dynamic_vars()
 	var/mob/type/testing/mob/mtest/M = new
+	src = M
+	call(src, "meme")()
 	world << M.asdf["ayy"]
 
 /client/verb/anewlist()
@@ -195,6 +225,21 @@ var/init_res = ""
 	..()
 	src << init_res
 
+/proc/add_one(x)
+	return x + 1
+
+/client/verb/without_inlining()
+	var/x = 0
+	for(var/i in 1 to 2)
+		x = add_one(x)
+	world << x
+
+/client/verb/with_inlining()
+	var/x = 0
+	for(var/i in 1 to 2)
+		x = add_one(x)
+	world << x
+
 /client/verb/pauseable_proc()
 	world << "before pause!"
 	world << "after pause!"
@@ -210,6 +255,9 @@ var/init_res = ""
 	var/space_2
 	var/space_3
 	var/space_4
+	var/space_5
+	var/space_7
+	var/space_6
 	var/x = "Before recompilation!"
 	world << x
 
@@ -301,3 +349,23 @@ var/init_res = ""
 	var/x = 1
 	var/y = 2
 	world << "hello world -> [x] [y]"
+
+/client/verb/strange_syntax()
+	var/x = 10
+	var/list/L = list(1, 2, 3)
+	world.log << "[x in L]"
+	world << "[x in 1 to 10]"
+
+/proc/twelve_locals()
+	var/v1 = null
+	var/v2 = null
+	var/v3 = null
+	var/v4 = null
+	var/v5 = null
+	var/v6 = null
+	var/v7 = null
+	var/v8 = null
+	var/v9 = null
+	var/v10 = null
+	var/v11 = null
+	var/v12 = null
