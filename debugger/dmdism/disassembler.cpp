@@ -108,7 +108,8 @@ void Disassembler::disassemble_var(Instruction& instr)
 	}
 	default:
 	{
-		context_->eat();
+		std::uint32_t val = context_->eat();
+		instr.add_comment("SRC."+byond_tostring(val));
 		break;
 	}
 	}

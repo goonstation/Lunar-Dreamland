@@ -113,6 +113,8 @@ proc.getProc("/client/proc/list_stuff"):hook(
 )
 proc.getProc("/client/proc/typetest"):hook(
 	function(original, usr, src, d, m, o)
+		local a = t2t.toLua(signatures.RadicalGetVariable(0x21, 0x00, 0x27))
+		print(a)
 		--[[print("Intial ayy:", m.asdf["ayy"])
 		m.asdf["ayy"] = "not lmao"
 		m.asdf["nonexistent"] = "or is it?"
@@ -128,10 +130,12 @@ proc.getProc("/client/proc/typetest"):hook(
 		print("Time taken to istype 1 million times: ", os.clock() - start_time)]]
 		--[[local bench
 		start_time = os.clock()
-		local getvar = signatures.GetVariable
-		local handle = m.handle
+		local getvar = signatures.RadicalGetVariable
+		local type = m.handle.type
+		local id = m.handle.value
+		local xd = t2t.str2index("name")
 		for i = 1, 100000 do
-			getvar(handle, 0x27)
+			bench = getvar(type, id, xd)
 		end
 		print("Time taken to get var 100,000 times: ", os.clock() - start_time)]]
 		--[[start_time = os.clock()
@@ -209,8 +213,75 @@ proc.getProc("/client/verb/receive_patch"):hook(
 	end
 )
 
+--[[recipient = proc.getProcSetupInfo("/client/verb/with_inlining")
+donor = proc.getProcSetupInfo("/proc/add_one")
+new_bytecode = {}
+r_offset = 0
+d_offset = 4
+
+print(recipient.bytecode)
+
+
+recipient_len = recipient.bytecode_len
+recipient_var_count = recipient.local_var_count
+ret_jump = 0
+while r_offset < recipient.bytecode_len do
+	if recipient.bytecode[r_offset] == 0x30 then
+		table.insert(new_bytecode, 0x0F)
+		table.insert(new_bytecode, recipient_len)
+		table.insert(new_bytecode, 0x1337) --padding
+		r_offset = r_offset + 3
+		ret_jump = r_offset
+	else
+		table.insert(new_bytecode, recipient.bytecode[r_offset])
+		r_offset = r_offset + 1
+	end
+end
+
+
+table.insert(new_bytecode, 0x34)
+table.insert(new_bytecode, 0xFFDA)
+table.insert(new_bytecode, 0x02)
+while d_offset < donor.bytecode_len-1 do
+	if donor.bytecode[d_offset] == 0xFFD9 then
+		table.insert(new_bytecode, 0xFFDA)
+		table.insert(new_bytecode, 0x02)
+		d_offset = d_offset + 2
+		--r_offset = r_offset + 2
+	elseif donor.bytecode[d_offset] == 0x12 then
+		--table.insert(new_bytecode, 0x33)
+		--table.insert(new_bytecode, 0xFFDA)
+		--table.insert(new_bytecode, 0x02)
+		table.insert(new_bytecode, 0x0F)
+		table.insert(new_bytecode, ret_jump)
+		d_offset = d_offset + 1
+	else
+		table.insert(new_bytecode, donor.bytecode[d_offset])
+		d_offset = d_offset + 1
+		--r_offset = r_offset + 1
+	end
+end
+table.insert(new_bytecode, 0x60)
+table.insert(new_bytecode, 0x00)
+table.insert(new_bytecode, 0x00)
+table.insert(new_bytecode, 0x0F)
+table.insert(new_bytecode, ret_jump)
+table.insert(new_bytecode, 0x00)
+
+local l = #new_bytecode
+pnew_bytecode = ffi.new("int[?]", l, new_bytecode)
+print(pnew_bytecode)
+byond.new_bytecode = pnew_bytecode
+recipient.bytecode = pnew_bytecode
+recipient.local_var_count = 16]]
+recipient = proc.getProcSetupInfo("/client/verb/with_inlining")
+print(recipient.bytecode)
+--recipient.bytecode_len = 67
+--recipient.local_var_count = 3
+
+
 ffi.cdef [[
-	__declspec(dllexport) void __cdecl pass_shit(const char** proc_names, int* proc_ids, short* varcounts, short* bytecode_lens, int** bytecodes, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr woo);
+	__declspec(dllexport) void __cdecl pass_shit(const char** proc_names, int* proc_ids, short* varcounts, short* bytecode_lens, int** bytecodes, ProcSetupEntry** setup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr woo, GetStringTableIndex wahoo, unsigned short* benis, unsigned short* benis2, ProcArrayEntry* killme);
 	__declspec(dllexport) void breakpoint_hit(int* bytecode, int offset);
 ]]
 
@@ -220,6 +291,9 @@ local proc_ids = {}
 local varcounts = {}
 local bytecode_lens = {}
 local bytecodes = {}
+local setup_entries = {}
+local varcount_indices = {}
+local bytecode_indices = {}
 v = proc.allProcs()[0] --god damn it lua
 table.insert(proc_names, v.path)
 table.insert(proc_ids, v.id)
@@ -227,6 +301,9 @@ p = proc.getProcSetupInfo(v.path)
 table.insert(varcounts, p.local_var_count)
 table.insert(bytecode_lens, p.bytecode_len)
 table.insert(bytecodes, p.bytecode)
+table.insert(varcount_indices, v.proc.local_var_count_idx)
+table.insert(bytecode_indices, v.proc.bytecode_idx)
+--table.insert(setup_entries, signatures.ProcSetupTable[p.__proc.proc.bytecode_idx])
 for _, v in ipairs(proc.allProcs()) do
 	table.insert(proc_names, v.path)
 	table.insert(proc_ids, v.id)
@@ -234,6 +311,10 @@ for _, v in ipairs(proc.allProcs()) do
 	table.insert(varcounts, p.local_var_count)
 	table.insert(bytecode_lens, p.bytecode_len)
 	table.insert(bytecodes, p.bytecode)
+	table.insert(varcount_indices, v.proc.local_var_count_idx)
+	table.insert(bytecode_indices, v.proc.bytecode_idx)
+	--print(v.proc.local_var_count_idx)
+	--table.insert(setup_entries, signatures.ProcSetupTable[p.__proc.proc.bytecode_idx])
 	--if v.path == "/client/verb/patchable" then
 	--	print(p.bytecode)
 	--end
@@ -245,14 +326,22 @@ proc_ids = ffi.new("int[?]", #proc_ids, proc_ids)
 varcounts = ffi.new("short[?]", #varcounts, varcounts)
 bytecode_lens = ffi.new("short[?]", #bytecode_lens, bytecode_lens)
 bytecodes = ffi.new("int*[?]", #bytecodes, bytecodes)
+setup_entries = ffi.new("ProcSetupEntry*[?]", #setup_entries, setup_entries)
+bytecode_indices = ffi.new("unsigned short[?]", #bytecode_indices, bytecode_indices)
+varcount_indices = ffi.new("unsigned short[?]", #varcount_indices, varcount_indices)
 dmdis.pass_shit(
 	proc_names,
 	proc_ids,
 	varcounts,
 	bytecode_lens,
 	bytecodes,
+	signatures.ProcSetupTable,
 	lprocs,
 	signatures.CurrentExecutionContext,
-	signatures.GetStringTableIndexPtr
+	signatures.GetStringTableIndexPtr,
+	signatures.GetStringTableIndex,
+	varcount_indices,
+	bytecode_indices,
+	signatures.GetProcArrayEntry(0)
 )
 byond.set_breakpoint_func(debugger.debug_hook)

@@ -39,3 +39,20 @@ void Instr_PUSHVAL::Disassemble(Context* context, Disassembler* dism)
 		comment_ += '"' + byond_tostring(value) + '"';
 	}
 }
+
+void Instr_ISINLIST::Disassemble(Context* context, Disassembler* dism)
+{
+	std::uint32_t type = context->eat();
+	if(type == 0x0B)
+	{
+		//Checks if the argument is inside a range: if(x in 1 to 10)
+		opcode().add_info(" INRANGE");
+		comment_ = "range";
+		dism->add_call_args(*this, 2);
+	}
+	//type 0x05 check if argument is in list, leaving as default unless more types show up
+	else if(type != 0x05)
+	{
+		opcode().add_info(" UNKNOWN ISINLIST ARGUMENT");
+	}
+}
