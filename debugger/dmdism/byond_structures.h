@@ -109,7 +109,7 @@ extern GetStringTableIndexPtr getStringRaw;
 extern GetStringTableIndex getStringIndex;
 
 struct ProcInfo;
-extern ProcSetupEntry** setup_entries;
+extern ProcSetupEntry* setup_entries;
 extern std::unordered_map<int*, ProcInfo> bytecode_to_proc_lol;
 
 struct ProcInfo
@@ -129,29 +129,29 @@ public:
 
 	unsigned short get_varcount() const
 	{
-		return setup_entries[varcount_idx]->local_var_count;
+		return setup_entries[varcount_idx].local_var_count;
 	}
 
 	void set_varcount(short new_varcount) const
 	{
-		setup_entries[varcount_idx]->local_var_count = 12;
+		setup_entries[varcount_idx].local_var_count = 12;
 	}
 
 	unsigned short get_bytecode_length() const
 	{
-		return setup_entries[bytecode_idx]->bytecode_length;
+		return setup_entries[bytecode_idx].bytecode_length;
 	}
 
 	int* get_bytecode() const
 	{
 		std::cout << bytecode_idx << std::endl;
-		return setup_entries[bytecode_idx]->bytecode;
+		return setup_entries[bytecode_idx].bytecode;
 	}
 
 	void set_bytecode(std::vector<int>* new_bytecode)
 	{
-		setup_entries[bytecode_idx]->bytecode = new_bytecode->data();
-		setup_entries[bytecode_idx]->bytecode_length = (short)new_bytecode->size();
-		bytecode_to_proc_lol[setup_entries[bytecode_idx]->bytecode] = *this;
+		setup_entries[bytecode_idx].bytecode = new_bytecode->data();
+		setup_entries[bytecode_idx].bytecode_length = (short)new_bytecode->size();
+		bytecode_to_proc_lol[setup_entries[bytecode_idx].bytecode] = *this;
 	}
 };

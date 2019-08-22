@@ -21,7 +21,7 @@ ProcArrayEntry* proc_array;
 ExecutionContext** current_context_pointer;
 GetStringTableIndexPtr getStringRaw;
 GetStringTableIndex getStringIndex;
-ProcSetupEntry** setup_entries;
+ProcSetupEntry* setup_entries;
 std::unordered_map<int*, ProcInfo> bytecode_to_proc_lol;
 
 std::vector<std::string> split(const std::string &s, char delim) {
@@ -565,7 +565,7 @@ void inlinize(std::string procname)
 	bool found = false;
 	for(ProcInfo& pi: procs)
 	{
-		if(setup_entries[proc_array[pi.id].local_var_count_idx]->local_var_count >= locals_needed)
+		if(setup_entries[proc_array[pi.id].local_var_count_idx].local_var_count >= locals_needed)
 		{
 			recipient.varcount_idx = pi.varcount_idx;
 			proc_array[recipient.id].local_var_count_idx = pi.varcount_idx;
@@ -664,7 +664,7 @@ void inline_all()
 
 extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* proc_ids, int* varcounts, int* bytecode_lens, int** bytecodes, ProcSetupEntry** lsetup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr strgetter, GetStringTableIndex strindexer, unsigned int* varcount_indices, unsigned int* bytecode_indices, ProcArrayEntry* pproc_array)
 {
-	setup_entries = lsetup_entries;
+	setup_entries = *lsetup_entries;
 	for(int i=0;i<number_of_procs;i++)
 	{
 		ProcInfo pi;
