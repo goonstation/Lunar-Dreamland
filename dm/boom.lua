@@ -50,8 +50,8 @@ print("Recompiled:")
 disasm.disassemble(proc_to_recompile.bytecode, proc_to_recompile.bytecode_len)
 ]]
 --proc.getProc("/client/verb/various"):set_breakpoint()
-local p = proc.getProcSetupInfo("/client/proc/test_opt")
-disasm.disassemble(p.bytecode, p.bytecode_len)
+--local p = proc.getProcSetupInfo("/client/proc/test_opt")
+--disasm.disassemble(p.bytecode, p.bytecode_len)
 --[[local new_bytecode = {
 	0x33,
 	0xFFE5,
@@ -179,7 +179,7 @@ proc.getProc("/client/verb/context_test"):hook(
 	end
 )
 
-proc.getProc("/client/proc/recompile"):hook(
+--[[proc.getProc("/client/proc/recompile"):hook(
 	function(original, usr, src, newcode)
 		p = byond.getProcSetupInfo("/client/verb/recompilable_verb")
 		local new = compiler.compile(newcode)
@@ -188,7 +188,7 @@ proc.getProc("/client/proc/recompile"):hook(
 			p.bytecode = new
 		end
 	end
-)
+)]]
 
 print("Hooked everything")
 --[[print(proc.getProc("/proc/conoutput").id)
@@ -203,7 +203,7 @@ end
 print(t2t.idx2str(0xA0))
 for i = 0x15D, 0x16A do
 	print(t2t.idx2str(i))
-end]]
+end
 proc.getProc("/client/verb/receive_patch"):hook(
 	function(original, usr, src)
 		local f = io.open("\\\\.\\pipe\\dmcompiler", "r")
@@ -211,7 +211,7 @@ proc.getProc("/client/verb/receive_patch"):hook(
 		compiler.patch(req["path"], req["bytecode"], req["strings"], req["local_count"])
 		proc.getProc("/proc/to_world")("<b><tt>Received patch for " .. req["path"] .. "<tt></b>")
 	end
-)
+)]]
 
 --[[recipient = proc.getProcSetupInfo("/client/verb/with_inlining")
 donor = proc.getProcSetupInfo("/proc/add_one")
@@ -274,10 +274,10 @@ print(pnew_bytecode)
 byond.new_bytecode = pnew_bytecode
 recipient.bytecode = pnew_bytecode
 recipient.local_var_count = 16]]
-recipient = proc.getProcSetupInfo("/client/verb/with_inlining")
-print(recipient.bytecode)
+--recipient = proc.getProcSetupInfo("/client/verb/with_inlining")
+--print(recipient.bytecode)
 --recipient.bytecode_len = 67
---recipient.local_var_count = 3
+--recipient.local_var_count = 3]]
 
 
 ffi.cdef [[

@@ -121,8 +121,8 @@ struct ProcInfo
 private:
 	int* bytecode;
 public:
-	unsigned int varcount_idx;
-	unsigned int bytecode_idx;
+	unsigned short varcount_idx;
+	unsigned short bytecode_idx;
 	bool operator< (const ProcInfo &other) const {
 		return id < other.id;
 	}
@@ -144,7 +144,7 @@ public:
 
 	int* get_bytecode() const
 	{
-		std::cout << bytecode_idx << std::endl;
+		//std::cout << bytecode_idx << std::endl;
 		return setup_entries[bytecode_idx].bytecode;
 	}
 

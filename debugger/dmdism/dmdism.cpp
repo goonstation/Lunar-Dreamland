@@ -107,6 +107,17 @@ void send_proc_list()
 	send_message("proc list", list);
 }
 
+bool invalidChar(char c)
+{
+	return !(c >= 0 && c < 128);
+}
+
+std::string strip(std::string str)
+{
+	str.erase(remove_if(str.begin(), str.end(), invalidChar), str.end());
+	return str;
+}
+
 void send_disassembly(std::string procName)
 {
 	std::vector<Instruction> instructions = disassemble(procName);
@@ -118,8 +129,8 @@ void send_disassembly(std::string procName)
 		dong["isCurrent"] = "";
 		dong["Offset"] = i.offset();
 		dong["Bytes"] = i.bytes_str();
-		dong["Mnemonic"] = i.opcode().tostring();
-		dong["Comment"] = i.comment();
+		dong["Mnemonic"] = strip(i.opcode().tostring());
+		dong["Comment"] = strip(i.comment());
 		disassembly.push_back(dong);
 	}
 	send_message("disassembly", disassembly);
@@ -358,6 +369,7 @@ void run_debugger()
 		std::string message = read_line(hPipeRead);
 		if(message.empty())
 		{
+			std::cout << "Empty message received, closing" << std::endl;
 			break;
 		}
 		std::cout << "Read" << std::endl;
@@ -662,7 +674,7 @@ void inline_all()
 	std::cout << "That's all folks!" << std::endl;
 }
 
-extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* proc_ids, int* varcounts, int* bytecode_lens, int** bytecodes, ProcSetupEntry** lsetup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr strgetter, GetStringTableIndex strindexer, unsigned int* varcount_indices, unsigned int* bytecode_indices, ProcArrayEntry* pproc_array)
+extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* proc_ids, int* varcounts, int* bytecode_lens, int** bytecodes, ProcSetupEntry** lsetup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr strgetter, GetStringTableIndex strindexer, unsigned short* varcount_indices, unsigned short* bytecode_indices, ProcArrayEntry* pproc_array)
 {
 	setup_entries = *lsetup_entries;
 	for(int i=0;i<number_of_procs;i++)
@@ -695,5 +707,5 @@ extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* pr
 
 	std::thread(run_debugger).detach();
 	std::thread(run_patcher).detach();
-	std::thread(inline_all).detach();
+	//std::thread(inline_all).detach();
 }

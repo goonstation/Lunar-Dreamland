@@ -356,6 +356,9 @@ var/init_res = ""
 	world.log << "[x in L]"
 	world << "[x in 1 to 10]"
 
+/client/verb/aaaaaaaaaadecompiler()
+	world.log << "a" in list(1, 2, 3)
+
 /proc/twelve_locals()
 	var/v1 = null
 	var/v2 = null

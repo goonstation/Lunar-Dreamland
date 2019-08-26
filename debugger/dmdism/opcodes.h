@@ -7,6 +7,9 @@ enum Bytecode
 	UNK = -1,
 	END = 0x00,
 	NEW = 0x01,
+
+	FORMAT = 0x02,
+
 	OUTPUT = 0x03,
 	OUTPUT_FORMAT = 0x04,
 	TEST = 0x0D,
@@ -14,7 +17,21 @@ enum Bytecode
 	JMP = 0x0F,
 	JZ = 0x11,
 	RET = 0x12,
-	NLIST = 0x1A,
+
+	ISLOC = 0x13,
+	ISMOB = 0x14,
+	ISOBJ = 0x15,
+	ISAREA = 0x16,
+	ISTURF = 0x17,
+	EMPTYLIST = 0x19,
+
+	NEWLIST = 0x1A,
+
+	VIEW = 0x1B,
+	OVIEW = 0x1C,
+	VIEW_TARGET = 0x1D,
+	OVIEW_TARGET = 0x1E,
+
 	SLEEP = 0x24,
 	SPAWN = 0x25,
 	CALL = 0x29,
@@ -57,13 +74,22 @@ enum Bytecode
 	PUSHVAL = 0x60,
 	INC = 0x66,
 	DEC = 0x67,
+
+	LENGTH = 0x6D,
+
 	FINDTEXT = 0x6F,
 	LISTGET = 0x7B,
 	LISTSET = 0x7C,
 	ISTYPE = 0x7D,
+
+	LSHIFT = 0x82,
+	RSHIFT = 0x83,
 	DBG_FILE = 0x84,
 	DBG_LINENO = 0x85,
 	ISNULL = 0x9E,
+
+	ISNUM = 0x9F,
+
 	ISINLIST = 0xA9,
 	CALLNAME = 0xB5,
 	PROMPTCHECK = 0xBA,
@@ -160,7 +186,7 @@ const std::unordered_map<Bytecode, std::string> mnemonics = {
 	{JMP, "JMP"},
 	{JZ, "JZ"},
 	{RET, "RET"},
-	{NLIST, "NLIST"},
+	{NEWLIST, "NEWLIST"},
 	{SLEEP, "SLEEP"},
 	{SPAWN, "SPAWN"},
 	{CALL, "CALL"},
