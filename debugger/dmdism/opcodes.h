@@ -84,6 +84,7 @@ enum Bytecode
 
 	LSHIFT = 0x82,
 	RSHIFT = 0x83,
+
 	DBG_FILE = 0x84,
 	DBG_LINENO = 0x85,
 	ISNULL = 0x9E,

@@ -134,7 +134,8 @@ public:
 
 	void set_varcount(short new_varcount) const
 	{
-		setup_entries[varcount_idx].local_var_count = 12;
+		//proc_array[id].local_var_count_idx = proc_information.at("/proc/twelve_locals").varcount_idx;
+		//setup_entries[varcount_idx].local_var_count = ;
 	}
 
 	unsigned short get_bytecode_length() const
@@ -150,8 +151,9 @@ public:
 
 	void set_bytecode(std::vector<int>* new_bytecode)
 	{
+		std::cout << &setup_entries[varcount_idx] << std::endl;
 		setup_entries[bytecode_idx].bytecode = new_bytecode->data();
-		setup_entries[bytecode_idx].bytecode_length = (short)new_bytecode->size();
-		bytecode_to_proc_lol[setup_entries[bytecode_idx].bytecode] = *this;
+		//setup_entries[bytecode_idx].bytecode_length = (short)new_bytecode->size();
+		//bytecode_to_proc_lol[setup_entries[bytecode_idx].bytecode] = *this;
 	}
 };

@@ -357,7 +357,7 @@ var/init_res = ""
 	world << "[x in 1 to 10]"
 
 /client/verb/aaaaaaaaaadecompiler()
-	world.log << "a" in list(1, 2, 3)
+	//test decompiler here
 
 /proc/twelve_locals()
 	var/v1 = null
@@ -372,3 +372,7 @@ var/init_res = ""
 	var/v10 = null
 	var/v11 = null
 	var/v12 = null
+
+/client/verb/test_patching()
+	var/ass
+	world << "[src]"

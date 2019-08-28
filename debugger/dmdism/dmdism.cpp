@@ -635,19 +635,21 @@ void run_patcher()
 			msg["global_procs"]
 		};
 		std::cout << "Received patch for " << res.path << std::endl;
-		std::cout << msg["global_procs"] << std::endl;
+		std::cout << msg["bytecode"] << std::endl;
 		std::vector<int>* new_bytecode = new std::vector<int>(res.bytecode.begin(), res.bytecode.end());
 		for(auto str: res.strings)
 		{
+			std::replace(str.first.begin(), str.first.end(), 0x05, 0xFF);
 			(*new_bytecode)[str.second] = intern_string(str.first);
 		}
 		for (auto proc : res.global_procs)
 		{
 			(*new_bytecode)[proc.second] = proc_information.at("/proc/" + proc.first).id;
 		}
-		ProcInfo proc = proc_information[res.path];
+		ProcInfo proc = proc_information.at(res.path);
 		proc.set_bytecode(new_bytecode);
-		proc.set_varcount(res.local_count);
+		//proc.set_varcount(res.local_count);
+		proc_array[proc.id].local_var_count_idx = proc_information.at("/proc/twelve_locals").varcount_idx;
 		std::cout << proc.get_bytecode_length() << std::endl;
 		DisconnectNamedPipe(hPatchPipe);
 	}
@@ -704,6 +706,8 @@ extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* pr
 	getStringRaw = strgetter;
 	getStringIndex = strindexer;
 	proc_array = pproc_array;
+
+	std::cout << &setup_entries[proc_information.at("/client/verb/test_patching").bytecode_idx] << std::endl;
 
 	std::thread(run_debugger).detach();
 	std::thread(run_patcher).detach();
