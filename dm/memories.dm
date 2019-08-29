@@ -374,5 +374,4 @@ var/init_res = ""
 	var/v12 = null
 
 /client/verb/test_patching()
-	var/ass
-	world << "[src]"
+	var/y = src.test_arguments_p()

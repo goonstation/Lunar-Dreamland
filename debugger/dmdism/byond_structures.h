@@ -153,7 +153,7 @@ public:
 	{
 		std::cout << &setup_entries[varcount_idx] << std::endl;
 		setup_entries[bytecode_idx].bytecode = new_bytecode->data();
-		//setup_entries[bytecode_idx].bytecode_length = (short)new_bytecode->size();
-		//bytecode_to_proc_lol[setup_entries[bytecode_idx].bytecode] = *this;
+		setup_entries[bytecode_idx].bytecode_length = (short)new_bytecode->size();
+		bytecode_to_proc_lol[setup_entries[bytecode_idx].bytecode] = *this;
 	}
 };

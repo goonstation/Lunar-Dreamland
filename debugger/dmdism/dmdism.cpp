@@ -707,6 +707,8 @@ extern "C" __declspec(dllexport) void pass_shit(const char** proc_names, int* pr
 	getStringIndex = strindexer;
 	proc_array = pproc_array;
 
+	std::cout << std::hex << intern_string("test arguments p") << std::endl;
+
 	std::cout << &setup_entries[proc_information.at("/client/verb/test_patching").bytecode_idx] << std::endl;
 
 	std::thread(run_debugger).detach();
