@@ -179,6 +179,24 @@ proc.getProc("/client/verb/context_test"):hook(
 	end
 )
 
+ffi.cdef [[
+	void run_ffi(SetVariablePtr setvar, GetStringTableIndex gsti, int promise_id, const char* dllname, const char* funcname, int n_args, const char** args)
+]]
+
+local byondffi = ffi.load("byondffi")
+
+--[[proc.getProc("/datum/ffi/proc/__call"):hook(
+	function(original, usr, src, args)
+		local args = args:as_table()
+		local dll_name = ffi.new("const char*", table.remove(args, 1))
+		local promise_id = ffi.new("int", tonumber(string.sub(table.remove(args, 1), 6, -2), 16))
+		local func_name = ffi.new("const char*", table.remove(args, 1))
+		local n_args = #args
+		args = ffi.new("const char*[?]", #args, args)
+		byondffi.run_ffi(signatures.SetVariable, signatures.GetStringTableIndex, promise_id, dll_name, func_name, n_args, args)
+	end
+)]]
+
 --[[proc.getProc("/client/proc/recompile"):hook(
 	function(original, usr, src, newcode)
 		p = byond.getProcSetupInfo("/client/verb/recompilable_verb")
@@ -280,11 +298,11 @@ recipient.local_var_count = 16]]
 --recipient.local_var_count = 3]]
 
 
-ffi.cdef [[
+--[[ffi.cdef [[
 	__declspec(dllexport) void __cdecl pass_shit(const char** proc_names, int* proc_ids, short* varcounts, short* bytecode_lens, int** bytecodes, ProcSetupEntry** setup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr woo, GetStringTableIndex wahoo, unsigned short* benis, unsigned short* benis2, ProcArrayEntry* killme);
 	__declspec(dllexport) void breakpoint_hit(int* bytecode, int offset);
 ]]
-
+--[[
 local dmdis = ffi.load("dmdism")
 local proc_names = {}
 local proc_ids = {}
@@ -345,3 +363,4 @@ dmdis.pass_shit(
 	signatures.GetProcArrayEntry(0)
 )
 byond.set_breakpoint_func(debugger.debug_hook)
+]]

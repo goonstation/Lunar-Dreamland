@@ -22,6 +22,14 @@ function meta:__tostring()
 	return "list(" .. vals .. ")"
 end
 
+function meta:as_table()
+	local vals = {}
+	for i = 1, self.length do
+		table.insert(vals, self[i])
+	end
+	return vals
+end
+
 function meta:__index(acc)
 	if acc == "length" then
 		return self.internal_list.length

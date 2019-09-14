@@ -14,7 +14,9 @@
 // END_PREFERENCES
 
 // BEGIN_INCLUDE
+#include "_maptick_api.dm"
 #include "another_file.dm"
 #include "memories.dm"
+#include "memories.dmm"
 // END_INCLUDE
 

@@ -1,5 +1,49 @@
 /world
 	loop_checks = 0
+	fps = 20
+
+world/Topic(T)
+	world << T
+
+/client/verb/export()
+	world.Export("byond://127.0.0.1:2789?whatever")
+
+/datum/promise
+	var/completed = FALSE
+	var/result = ""
+
+/datum/promise/proc/resolve()
+	while(!completed)
+		sleep(1)
+	return result
+
+/proc/call_async()
+	var/list/arguments = args.Copy()
+	var/datum/promise/P = new
+	arguments.Insert(1, "\ref[P]")
+	call("byondffi.dll", "call_async")(arglist(arguments))
+	return P
+
+/proc/call_wait()
+	return call_async(arglist(args)).resolve()
+
+/client/verb/test_ffi()
+	var/datum/promise/P = call_async("slow.dll", "slow_concat", "Hello", ",", " world", "!")
+	world << "Now we wait..."
+	world << "Call returned: [P.resolve()]"
+
+/client/verb/make_une_req()
+	make_req()
+
+/proc/make_req()
+	var/list/http[] = world.Export("http://aa07.ml/test.php")
+	world.log << http["CONTENT"]
+
+/client/verb/maptick_load()
+	maptick_initialize()
+
+/client/verb/maptick_test()
+	world << MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 /client
 	var/list/listvar = list(1, "test")
@@ -83,6 +127,9 @@ var/datum/access_test/test
 
 /client/proc/proccall_print(sth)
 	src << sth
+
+/client/verb/set_something()
+	test.name = "sdfsdf"
 
 /client/verb/test_read()
 
@@ -220,6 +267,8 @@ var/init_res = ""
 	test = new
 	init_res += call("hookerino.dll","BHOOK_Init")()
 	init_res += call("hookerino.dll", "BHOOK_RunLua")("dofile'boom.lua'")
+	call("byondffi.dll", "initialize")()
+	//init_res += call("maptick.dll", "initialize")()
 
 /client/New()
 	..()
@@ -374,4 +423,19 @@ var/init_res = ""
 	var/v12 = null
 
 /client/verb/test_patching()
-	var/y = src.test_arguments_p()
+	var/list/L = list(1,2,3)
+	L[1][1]
+
+/proc/get_sendmaps_time_raw()
+
+/proc/get_sendmaps_percentage()
+	var/time_taken = get_sendmaps_time_raw()
+	var/time_per_tick = world.tick_lag
+	return (time_taken / time_per_tick) * 100
+
+/client/verb/sendmaps_test()
+	world << "SendMaps took [get_sendmaps_percentage()]% of last tick"
+
+/client/verb/set_fps()
+	var/f = input("fps") as num
+	world.fps = f
