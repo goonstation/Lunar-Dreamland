@@ -25,7 +25,7 @@ Hell yeah! The debugger currently depends on Lunar but it might become a serpara
 At the moment, the project contains a disassembler which translates BYOND bytecode into assembly-like output. The debugger displays that output and offers the ability to set breakpoints, which stop execution of the proc and allow inspecting the proc state, such as local variable values.
 
 #### I'm tired of recompiling the server every time I make a change.
-It's not available yet but a hot patching compiler is in the works! It is integrated into [SpacemanDMM](https://github.com/SpaceManiac/SpacemanDMM) and the VSCode extension. It will allow you to simply recompile a proc and swap the new bytecode in, without even restarting Dream Daemon. Cool, huh?
+A hot patching compiler is in the works! It is integrated into [SpacemanDMM](https://github.com/SpaceManiac/SpacemanDMM) and the VSCode extension. It will allow you to simply recompile a proc and swap the new bytecode in, without even restarting Dream Daemon. Cool, huh? See the progress here: https://github.com/SpaceManiac/SpacemanDMM/pull/104
 
 #### This is great but how do I compile it?
 dunno lol, use the binaries
