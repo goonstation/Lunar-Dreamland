@@ -1,3 +1,6 @@
+#define BYONDFFI (world.system_type == UNIX ? "byondffi" : "byondffi.dll")
+#define HOOKERINO (world.system_type == UNIX ? "hookerino" : "hookerino.dll")
+
 /world
 	loop_checks = 0
 	fps = 20
@@ -21,7 +24,7 @@ world/Topic(T)
 	var/list/arguments = args.Copy()
 	var/datum/promise/P = new
 	arguments.Insert(1, "\ref[P]")
-	call("byondffi.dll", "call_async")(arglist(arguments))
+	call(BYONDFFI, "call_async")(arglist(arguments))
 	return P
 
 /proc/call_wait()
@@ -39,23 +42,23 @@ world/Topic(T)
 	var/list/http[] = world.Export("http://aa07.ml/test.php")
 	world.log << http["CONTENT"]
 
-/client/verb/maptick_load()
-	maptick_initialize()
+///client/verb/maptick_load()
+//	maptick_initialize()
 
-/client/verb/maptick_test()
-	world << MAPTICK_LAST_INTERNAL_TICK_USAGE
+///client/verb/maptick_test()
+//	world << MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 /client
 	var/list/listvar = list(1, "test")
 
 /client/verb/initDLL()
-	world << call("hookerino.dll","BHOOK_Init")()
+	world << call(HOOKERINO,"BHOOK_Init")()
 
 /client/verb/runLua(var/code as message)
-	world << call("hookerino.dll", "BHOOK_RunLua")(code)
+	world << call(HOOKERINO, "BHOOK_RunLua")(code)
 
 /client/verb/unload()
-	world << call("hookerino.dll","BHOOK_Unload")()
+	world << call(HOOKERINO,"BHOOK_Unload")()
 
 /client/verb/runLuaFile()
 	runLua("dofile'boom.lua'")
@@ -245,6 +248,7 @@ var/datum/access_test/test
 /client/verb/context_test()
 	return ct()
 
+/*
 /client/verb/other_file_test()
 	return from_another_file(5, 6, 7)
 
@@ -253,7 +257,7 @@ var/datum/access_test/test
 	var/obj/type/testing/obj/otest/O2 = new
 	O2.name = "test"
 	world << O2.name
-	return from_another_file(5, 6, 7)
+	return from_another_file(5, 6, 7)*/
 
 /client/verb/sleep_test()
 	sleep(10)
@@ -265,9 +269,9 @@ var/init_res = ""
 /world/New()
 	..()
 	test = new
-	init_res += call("hookerino.dll","BHOOK_Init")()
-	init_res += call("hookerino.dll", "BHOOK_RunLua")("dofile'boom.lua'")
-	call("byondffi.dll", "initialize")()
+	init_res += call(HOOKERINO,"BHOOK_Init")()
+	init_res += call(HOOKERINO, "BHOOK_RunLua")("dofile'boom.lua'")
+	call(BYONDFFI, "initialize")()
 	//init_res += call("maptick.dll", "initialize")()
 
 /client/New()

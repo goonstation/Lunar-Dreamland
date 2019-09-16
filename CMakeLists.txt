@@ -1,24 +1,26 @@
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
 cmake_minimum_required(VERSION 3.0.0)
 project(lunar-dreamland VERSION 0.1.0)
 
 include(ExternalProject)
 
-set(SUBHOOK_INSTALL_LOCATION "${CMAKE_CURRENT_LIST_DIR}/subhook")
-
-ExternalProject_Add(subhook
-    GIT_REPOSITORY https://github.com/Zeex/subhook
-    CMAKE_ARGS -DSUBHOOK_TESTS=false -DCMAKE_INSTALL_PREFIX=${SUBHOOK_INSTALL_LOCATION}
+set(luajit_CC "gcc -m32")
+ExternalProject_Add(luajit
+    URL http://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz
+    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/luajit-2.1.0-beta3
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND make CC=${luajit_CC}
+    INSTALL_COMMAND make install PREFIX=${CMAKE_CURRENT_BINARY_DIR}/luajit-2.1.0-beta3
+    BUILD_IN_SOURCE 1
 )
+ExternalProject_Get_Property(luajit install_dir)
 
 
-include_directories(${SUBHOOK_INSTALL_LOCATION}/include)
-link_directories(${SUBHOOK_INSTALL_LOCATION}/lib)
+add_library(hookerino SHARED hookerino/main.cpp hookerino/sigscan.cpp)
+set_target_properties(hookerino PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+add_dependencies(hookerino luajit)
+target_include_directories(hookerino PUBLIC ${install_dir}/include/luajit-2.1)
+target_link_directories(hookerino PUBLIC ${install_dir}/lib)
+target_link_libraries(hookerino luajit-5.1)
 
-find_package(LuaJIT REQUIRED)
-include_directories(${LUA_INCLUDE_DIR})
-
-add_library(lunar-dreamland SHARED cpp/main.cpp)
-add_dependencies(lunar-dreamland subhook)
-target_link_libraries(lunar-dreamland ${LUA_LIBRARIES})
+add_library(byondffi SHARED byondffi/dllmain.cpp byondffi/sigscan.cpp)
+set_target_properties(byondffi PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")

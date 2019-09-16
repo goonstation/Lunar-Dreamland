@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define protected public
-#include <subhook.h>
+//#include <subhook.h>
+#include "urmem.hpp"
 #undef protected
 //AAAAAAAAAAAAAAAAA ^
 extern "C" {
@@ -9,7 +10,7 @@ extern "C" {
 	#include <lualib.h>
 	#include <luajit-2.1/luajit.h>
 }
-#include "inc/sigscan.h"
+#include "sigscan.h"
 #include <cstring>
 
 #if defined(_MSC_VER)
@@ -29,45 +30,58 @@ extern "C" {
 #pragma warning Unknown dynamic link import/export semantics.
 #endif
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#define BYOND_FUNC __declspec(dllexport) const char* _cdecl
+#else
+#define BYOND_FUNC __attribute__((visibility("default"))) const char*
+#endif
+
+#include <cstdio>
+
 static int lj_hook_table;
 lua_State* L = nullptr;
+
+
 luaL_Reg lj_plhdetour[] = {
 	{"getArch", [](lua_State * L) {
-		auto detour = (subhook::Hook*) luaL_checkudata(L, 1, "subhook::Hook");
+		auto detour = (urmem::hook*) luaL_checkudata(L, 1, "urmem::hook");
 		lua_pushstring(L, "x86");
 		return 1;
 	}},
 	{"hook", [](lua_State * L) {
-		auto detour = (subhook::Hook*) luaL_checkudata(L, 1, "subhook::Hook");
-		if (detour->Install()) {
-			lua_pushnumber(L, (uintptr_t)detour->GetTrampoline());
+		auto detour = (urmem::hook*)luaL_checkudata(L, 1, "urmem::hook");
+		detour->enable();
+		if (detour->is_enabled()) {
+			lua_pushnumber(L, (uintptr_t)detour->get_original_addr());
 		}
 		else
-		   lua_pushboolean(L, 0);
+			lua_pushboolean(L, 0);
 		return 1;
 	}},
 	{"unhook", [](lua_State * L) {
-		auto detour = (subhook::Hook*) luaL_checkudata(L, 1, "subhook::Hook");
-		lua_pushboolean(L, detour->Remove() == 1);
+		auto detour = (urmem::hook*) luaL_checkudata(L, 1, "urmem::hook");
+		detour->disable();
+		lua_pushboolean(L, !detour->is_enabled());
 		return 1;
 	}},
 	{"__gc", [](lua_State * L) {
-		auto detour = (subhook::Hook*) luaL_checkudata(L, 1, "subhook::Hook");
-		lua_pushboolean(L, detour->Remove() == 1);
+		auto detour = (urmem::hook*) luaL_checkudata(L, 1, "urmem::hook");
+		detour->disable();
+		lua_pushboolean(L, !detour->is_enabled());
 		return 1;
 	}},
 	{"getTrampoline", [](lua_State * L) {
-		auto detour = (subhook::Hook*) luaL_checkudata(L, 1, "subhook::Hook");
-		lua_pushnumber(L, (uintptr_t)detour->GetTrampoline());
+		auto detour = (urmem::hook*) luaL_checkudata(L, 1, "urmem::hook");
+		lua_pushnumber(L, (uintptr_t)detour->get_original_addr());
 		return 1;
 	}},
 	{nullptr, nullptr}
 };
 
-
 void bh_initmetatables() {
 	{
-		luaL_newmetatable(L, "subhook::Hook");
+		luaL_newmetatable(L, "urmem::hook");
 		lua_pushvalue(L, -1);
 		lua_setfield(L, -2, "__index");
 		luaL_setfuncs(L, lj_plhdetour, 0);
@@ -78,13 +92,14 @@ void bh_initmetatables() {
 static int lj_new_hook(lua_State * L) {
 	void* orig = (void*)(uintptr_t)lua_tonumber(L, 1);
 	void* hook = (void*)(uintptr_t)lua_tonumber(L, 2);
-	//subhook::Hook* detour = new (lua_newuserdata(L, sizeof(subhook::Hook))) subhook::Hook((const char*)orig, (const char*)hook, &trampoline, *m_activeDisassembler);
-	subhook::Hook* detour = (subhook::Hook*)lua_newuserdata(L, sizeof(subhook::Hook));
-	detour->Install(orig, hook);
-	luaL_setmetatable(L, "subhook::Hook");
+	urmem::hook* detour = (urmem::hook*)lua_newuserdata(L, sizeof(urmem::hook));
+	detour->install(urmem::get_func_addr(orig), urmem::get_func_addr(hook));
+	luaL_setmetatable(L, "urmem::hook");
 	return 1;
 
 }
+
+
 static int lj_sigscan(lua_State * L) {
 	if (lua_isnumber(L, 1)) {
 		luaL_gsub(L, lua_tostring(L, 3), " ? ", " ?? ");
@@ -99,6 +114,7 @@ static int lj_sigscan(lua_State * L) {
 		return 1;
 	}
 }
+
 #ifndef _WIN32
 static void* disgusting;
 static int callback(struct dl_phdr_info* info, size_t size, void* data)
@@ -118,6 +134,8 @@ static int callback(struct dl_phdr_info* info, size_t size, void* data)
 	return 0;
 }
 #endif
+
+
 static int lj_get_module(lua_State * L) {
 #ifdef _WIN32
 	auto addr = GetModuleHandleA(lua_tostring(L, 1));
@@ -135,11 +153,11 @@ static int lj_get_module(lua_State * L) {
 	}
 	return 1;
 }
-extern "C" EXPORT const char* BHOOK_Init(int n, char* v[]) {
+
+extern "C" BYOND_FUNC BHOOK_Init(int n, char** v) {
 	if (L) {
 		return "ERROR: Already initialized.";
 	}
-
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	bh_initmetatables();
@@ -159,7 +177,7 @@ extern "C" EXPORT const char* BHOOK_Init(int n, char* v[]) {
 	return "Setup complete!";
 }
 
-extern "C" EXPORT const char* BHOOK_RunLua(int n, char* v[]) {
+extern "C" BYOND_FUNC BHOOK_RunLua(int n, char* v[]) {
 	if (n > 0 && L) {
 		switch (luaL_loadstring(L, v[0])) {
 		case 0: {
@@ -179,7 +197,7 @@ extern "C" EXPORT const char* BHOOK_RunLua(int n, char* v[]) {
 	return "!Lua not loaded!";
 }
 
-extern "C" EXPORT const char* BHOOK_Unload(int n, char* v[]) {
+extern "C" BYOND_FUNC BHOOK_Unload(int n, char* v[]) {
 	if (L) {
 		lua_close(L);
 		L = nullptr;

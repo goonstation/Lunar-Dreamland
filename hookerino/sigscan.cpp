@@ -1,4 +1,4 @@
-#include <sigscan.h>
+#include "sigscan.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -45,7 +45,7 @@ static int
 callback(struct dl_phdr_info* info, size_t size, void* data)
 {
 	int j;
-	//printf("name: %s vs %s\n", info->dlpi_name, (const char*)data);
+	printf("name: %s vs %s\n", info->dlpi_name, (const char*)data);
 	if (!strstr(info->dlpi_name, (const char*)data)) return 0;
 	for (j = 0; j < info->dlpi_phnum; j++) {
 

@@ -1,10 +1,31 @@
-#include "pch.h"
 #include "sigscan.h"
 
 #include <thread>
 #include <string>
 #include <vector>
 #include <map>
+#include <cstring>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#if defined(_MSC_VER)
+//  Microsoft 
+#define EXPORT __declspec(dllexport)
+#define IMPORT __declspec(dllimport)
+#elif defined(__GNUC__)
+//  GCC
+#define EXPORT __attribute__((visibility("default")))
+#define IMPORT
+#include <dlfcn.h>
+#include <link.h>
+#else
+//  do nothing and hope for the best?
+#define EXPORT
+#define IMPORT
+#pragma warning Unknown dynamic link import/export semantics.
+#endif
 
 union heck
 {
@@ -29,12 +50,20 @@ std::map<std::string, std::map<std::string, byond_ffi_func*>> library_cache;
 
 const char* find_function_pointers()
 {
+#ifdef _WIN32
 	setVariable = (SetVariable*)Pocket::Sigscan::FindPattern("byondcore.dll", "55 8B EC 8B 4D 08 0F B6 C1 48 57 8B 7D 10 83 F8 53 0F ?? ?? ?? ?? ?? 0F B6 80 ?? ?? ?? ?? FF 24 85 ?? ?? ?? ?? FF 75 18 FF 75 14 57 FF 75 0C E8 ?? ?? ?? ?? 83 C4 10 5F 5D C3");
+#else
+	setVariable = (SetVariable*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 ? EC ? ? ? ? 89 75 ? 8B 55 ? 8B 75 ?");
+#endif
 	if (!setVariable)
 	{
 		return "ERROR: Failed to locate setVariable.";
 	}
+#ifdef _WIN32
 	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("byondcore.dll", "55 8B EC 8B 45 08 83 EC 18 53 8B 1D ?? ?? ?? ?? 56 57 85 C0 75 ?? 68 ?? ?? ?? ?? FF D3 83 C4 04 C6 45 10 00 80 7D 0C 00 89 45 E8 74 ?? 8D 45 10 50 8D 45 E8 50");
+#else
+	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 57 56 53 89 D3 83 EC ? 85 C0");
+#endif
 	if (!getStringTableIndex)
 	{
 		return "ERROR: Failed to locate getStringTableIndex.";
@@ -73,7 +102,7 @@ inline void do_it(byond_ffi_func* proc, std::string maptick_datum_ref, int n_arg
 	t.detach();
 }
 
-extern "C" __declspec(dllexport) const char* call_async(int n_args, const char** args)
+extern "C" EXPORT const char* call_async(int n_args, const char** args)
 {
 	if (!initialized)
 	{
@@ -89,12 +118,20 @@ extern "C" __declspec(dllexport) const char* call_async(int n_args, const char**
 		}
 	}
 
+#ifdef _WIN32
 	HMODULE lib = LoadLibraryA(dllname);
+#else
+	void* lib = dlopen(dllname, 0);
+#endif
 	if (!lib)
 	{
 		return "ERROR: Could not find library!";
 	}
+#ifdef _WIN32
 	byond_ffi_func* proc = (byond_ffi_func*)GetProcAddress(lib, funcname);
+#else
+	byond_ffi_func* proc = (byond_ffi_func*)dlsym(lib, funcname);
+#endif
 	if (!proc)
 	{
 		return "ERROR: Could not locate function in library!";
@@ -107,18 +144,20 @@ extern "C" __declspec(dllexport) const char* call_async(int n_args, const char**
 
 char result[256];
 
-extern "C" __declspec(dllexport) const char* initialize(int n_args, const char** args)
+extern "C" EXPORT const char* initialize(int n_args, const char** args)
 {
-	strcpy_s(result, 256, find_function_pointers());
+	//strcpy_s(result, 256, find_function_pointers());
+	strcpy(result, find_function_pointers());
 	return "";
 }
 
-extern "C" __declspec(dllexport) const char* cleanup(int n_args, const char** args)
+extern "C" EXPORT const char* cleanup(int n_args, const char** args)
 {
 	library_cache.clear();
 	return "";
 }
 
+#ifdef _WIN32
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -134,4 +173,4 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     }
     return TRUE;
 }
-
+#endif
