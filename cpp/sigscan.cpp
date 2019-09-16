@@ -38,7 +38,7 @@ void* Pocket::Sigscan::FindPattern(std::uintptr_t address, size_t size, const ch
 
 	return nullptr;
 }
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(WIN32)
 static void* disgusting;
 size_t disgustingSz;
 static int
