@@ -73,7 +73,7 @@ void hSendMaps()
 	time_taken = (end - start) / counterFrequency;
 #else
 	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-	time_taken = end.tv_nsec - start.tv_nsec;
+	time_taken = (end.tv_nsec - start.tv_nsec) / 1e9;
 #endif
 	setVariable(0x21, maptick_datum_id, last_internal_tick_usage_string_id, 0x2A, time_taken * 10);
 }
@@ -146,7 +146,6 @@ extern "C" BYOND_FUNC initialize(int n, char* v[])
 		if (result.empty())
 		{
 			last_internal_tick_usage_string_id = getStringTableIndex("last_internal_tick_usage", 0, 1);
-			printf("last_internal_tick_usage_string_id: %u\n", last_internal_tick_usage_string_id);
 #ifdef _WIN32
 			long long temp_freq;
 			QueryPerformanceFrequency((LARGE_INTEGER*)&temp_freq);
