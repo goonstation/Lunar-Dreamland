@@ -37,8 +37,6 @@ extern "C" {
 #define BYOND_FUNC __attribute__((visibility("default"))) const char*
 #endif
 
-
-#define fastcall __attribute__((regparm(3)))
 #include <cstdio>
 
 static int lj_hook_table;
@@ -155,12 +153,16 @@ static int lj_get_module(lua_State * L) {
 	return 1;
 }
 
-typedef unsigned int(fastcall GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+#ifdef _WIN32
+typedef unsigned int(__cdeclGetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+#else
+typedef unsigned int(__attribute__((regparm(3))) GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+#endif
 GetStringTableIndex* gstiTrampoline;
 
 urmem::hook* gstiDetour;
 
-fastcall unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
+__attribute__((regparm(3))) unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
 	printf("GetStringTableIndex(\"%s\", %i, %i);\n", string, handleEscapes, duplicateString);
 	return gstiDetour->call<urmem::calling_convention::thiscall, unsigned int>(string, handleEscapes, duplicateString);
 }

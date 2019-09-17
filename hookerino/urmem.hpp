@@ -27,7 +27,7 @@ public:
         cdeclcall,
         stdcall,
         thiscall,
-        fastcall
+        rp2
     };
 
     template<calling_convention CConv = calling_convention::cdeclcall, typename Ret = void, typename ... Args>
