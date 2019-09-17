@@ -24,3 +24,6 @@ target_link_libraries(hookerino luajit-5.1)
 
 add_library(byondffi SHARED byondffi/dllmain.cpp byondffi/sigscan.cpp)
 set_target_properties(byondffi PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")
+
+add_library(maptick SHARED maptick/dllmain.cpp maptick/sigscan.cpp)
+set_target_properties(maptick PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")

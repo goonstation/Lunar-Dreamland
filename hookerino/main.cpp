@@ -96,7 +96,6 @@ static int lj_new_hook(lua_State * L) {
 	detour->install(urmem::get_func_addr(orig), urmem::get_func_addr(hook));
 	luaL_setmetatable(L, "urmem::hook");
 	return 1;
-
 }
 
 
@@ -158,6 +157,7 @@ extern "C" BYOND_FUNC BHOOK_Init(int n, char** v) {
 	if (L) {
 		return "ERROR: Already initialized.";
 	}
+
 	L = luaL_newstate();
 	luaL_openlibs(L);
 	bh_initmetatables();

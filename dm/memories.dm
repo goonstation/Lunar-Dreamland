@@ -271,7 +271,7 @@ var/init_res = ""
 	test = new
 	init_res += call(HOOKERINO,"BHOOK_Init")()
 	init_res += call(HOOKERINO, "BHOOK_RunLua")("dofile'boom.lua'")
-	call(BYONDFFI, "initialize")()
+	init_res += call(BYONDFFI, "initialize")()
 	//init_res += call("maptick.dll", "initialize")()
 
 /client/New()

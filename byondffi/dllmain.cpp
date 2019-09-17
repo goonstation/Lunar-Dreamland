@@ -53,24 +53,27 @@ const char* find_function_pointers()
 #ifdef _WIN32
 	setVariable = (SetVariable*)Pocket::Sigscan::FindPattern("byondcore.dll", "55 8B EC 8B 4D 08 0F B6 C1 48 57 8B 7D 10 83 F8 53 0F ?? ?? ?? ?? ?? 0F B6 80 ?? ?? ?? ?? FF 24 85 ?? ?? ?? ?? FF 75 18 FF 75 14 57 FF 75 0C E8 ?? ?? ?? ?? 83 C4 10 5F 5D C3");
 #else
-	setVariable = (SetVariable*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 ? EC ? ? ? ? 89 75 ? 8B 55 ? 8B 75 ?");
+	setVariable = (SetVariable*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 ?? EC ?? ?? ?? ?? 89 75 ?? 8B 55 ?? 8B 75 ??");
 #endif
 	if (!setVariable)
 	{
+		printf("ERROR: Failed to locate setVariable.\n");
 		return "ERROR: Failed to locate setVariable.";
 	}
 #ifdef _WIN32
 	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("byondcore.dll", "55 8B EC 8B 45 08 83 EC 18 53 8B 1D ?? ?? ?? ?? 56 57 85 C0 75 ?? 68 ?? ?? ?? ?? FF D3 83 C4 04 C6 45 10 00 80 7D 0C 00 89 45 E8 74 ?? 8D 45 10 50 8D 45 E8 50");
 #else
-	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 57 56 53 89 D3 83 EC ? 85 C0");
+	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 57 56 53 89 D3 83 EC ?? 85 C0");
 #endif
 	if (!getStringTableIndex)
 	{
+		printf("ERROR: Failed to locate getStringTableIndex.\n");
 		return "ERROR: Failed to locate getStringTableIndex.";
 	}
 	result_string_id = getStringTableIndex("result", 0, 0);
 	completed_string_id = getStringTableIndex("completed", 0, 0);
 	initialized = true;
+	printf("byondFFI initialized!\n");
 	return "";
 }
 
