@@ -164,7 +164,7 @@ urmem::hook* gstiDetour;
 
 __attribute__((regparm(3))) unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
 	printf("GetStringTableIndex(\"%s\", %i, %i);\n", string, handleEscapes, duplicateString);
-	return gstiDetour->call<urmem::calling_convention::thiscall, unsigned int>(string, handleEscapes, duplicateString);
+	return gstiDetour->call<urmem::calling_convention::cdeclcall, unsigned int>(string, handleEscapes, duplicateString);
 }
 
 typedef void(SetVariable)(int dType, int dId, unsigned int varName, int newType, float newVal);
