@@ -20,7 +20,7 @@ set_target_properties(hookerino PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32
 add_dependencies(hookerino luajit)
 target_include_directories(hookerino PUBLIC ${install_dir}/include/luajit-2.1)
 target_link_directories(hookerino PUBLIC ${install_dir}/lib)
-target_link_libraries(hookerino luajit-5.1)
+target_link_libraries(hookerino libluajit-5.1.a)
 
 add_library(byondffi SHARED byondffi/dllmain.cpp byondffi/sigscan.cpp)
 set_target_properties(byondffi PROPERTIES COMPILE_FLAGS "-m32" LINK_FLAGS "-m32")

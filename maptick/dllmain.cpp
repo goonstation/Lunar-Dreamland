@@ -40,7 +40,7 @@ typedef void(__cdecl SetVariable)(int dType, int dId, int varName, int newType, 
 typedef unsigned int(__cdecl GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
 #else
 typedef void(SetVariable)(int dType, int dId, int varName, int newType, float newVal);
-typedef unsigned int(GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+typedef unsigned int(__attribute__((regparm(3))) GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
 #endif
 
 urmem::hook* sendMapsDetour;

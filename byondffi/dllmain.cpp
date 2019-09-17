@@ -33,10 +33,15 @@ union heck
 	float f;
 };
 
-typedef const char* (byond_ffi_func)(int, const char**);
-
+#ifdef _WIN32
+typedef void(__cdecl SetVariable)(int datumType, int datumId, unsigned int varNameId, int vtype, heck newvalue);
+typedef unsigned int(__cdecl GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+#else
 typedef void(SetVariable)(int datumType, int datumId, unsigned int varNameId, int vtype, heck newvalue);
-typedef int(__attribute__((regparm(3))) GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+typedef unsigned int(__attribute__((regparm(3))) GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+#endif
+
+typedef const char* (byond_ffi_func)(int, const char**);
 
 SetVariable* setVariable;
 GetStringTableIndex* getStringTableIndex;
