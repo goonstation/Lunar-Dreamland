@@ -75,9 +75,9 @@ void hSendMaps()
 	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 	time_taken = end.tv_nsec - start.tv_nsec;
 #endif
-	setVariable(0x21, maptick_datum_id, last_internal_tick_usage_string_id, 0x2A, time_taken * 10);
+	//setVariable(0x21, maptick_datum_id, last_internal_tick_usage_string_id, 0x2A, time_taken * 10);
+	//printf("setVariable(0x21, %u, %u, 0x2A, %f * 10)\n", maptick_datum_id, last_internal_tick_usage_string_id, time_taken);
 }
-
 
 std::string hook_sendmaps()
 {
@@ -90,21 +90,20 @@ std::string hook_sendmaps()
 	{
 		return "Failed to find SendMaps signature.";
 	}
-	urmem::hook* smd = new urmem::hook(urmem::get_func_addr(sendMaps), urmem::get_func_addr(&hSendMaps));
-	sendMapsDetour = smd; // this fixes the stack smash but I don't know why and I never want to know why
-	if (!smd)
+	sendMapsDetour = new urmem::hook(urmem::get_func_addr(sendMaps), urmem::get_func_addr(&hSendMaps));
+	if (!sendMapsDetour)
 	{
 		return "Failed to create detour.";
 	}
-	smd->enable();
-	if (!smd->is_enabled())
+	sendMapsDetour->enable();
+	if (!sendMapsDetour->is_enabled())
 	{
 		return "Failed to hook SendMaps.";
 	}
-	oSendMaps = (SendMaps*)smd->get_original_addr();
+	oSendMaps = (SendMaps*)sendMapsDetour->get_original_addr();
 	if (!oSendMaps)
 	{
-		smd->disable();
+		sendMapsDetour->disable();
 		return "Failed to cast trampoline.";
 	}
 	return "";
@@ -134,9 +133,9 @@ const char* find_function_pointers()
 }
 extern "C" BYOND_FUNC initialize(int n, char* v[])
 {
-	std::string maptick_datum_ref(v[0]);
-	maptick_datum_ref.erase(maptick_datum_ref.begin(), maptick_datum_ref.begin()+3);
-	maptick_datum_id = std::stoi(maptick_datum_ref.substr(maptick_datum_ref.find("0"), maptick_datum_ref.length() - 2), nullptr, 16);
+	//std::string maptick_datum_ref(v[0]);
+	//maptick_datum_ref.erase(maptick_datum_ref.begin(), maptick_datum_ref.begin()+3);
+	//maptick_datum_id = std::stoi(maptick_datum_ref.substr(maptick_datum_ref.find("0"), maptick_datum_ref.length() - 2), nullptr, 16);
 	if (initialized)
 	{
 		return "MAPTICK ERROR: Library initialized twice!";
@@ -147,7 +146,8 @@ extern "C" BYOND_FUNC initialize(int n, char* v[])
 		result = find_function_pointers();
 		if (result.empty())
 		{
-			last_internal_tick_usage_string_id = getStringTableIndex("last_internal_tick_usage", 0, 1);
+			//last_internal_tick_usage_string_id = getStringTableIndex("last_internal_tick_usage", 0, 1);
+			//printf("last_internal_tick_usage_string_id: %u\n", last_internal_tick_usage_string_id);
 #ifdef _WIN32
 			long long temp_freq;
 			QueryPerformanceFrequency((LARGE_INTEGER*)&temp_freq);

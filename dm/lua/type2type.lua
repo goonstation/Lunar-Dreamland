@@ -36,11 +36,13 @@ M.luaHandlers = {
 	end
 }
 
+print("1")
 for k, v in pairs {consts.MobType, consts.ObjType, consts.DatumType, consts.ClientType} do
 	M.luaHandlers[v] = function(val)
 		return M.idx2str(signatures.Path2Text(val.type, val.value))
 	end
 end
+print("2")
 
 function M.toLua(value)
 	local t = M.luaHandlers[tonumber(value.type)]
@@ -110,6 +112,7 @@ end
 const_strings = {}
 local current_string = ""
 local current_char = signatures.GetStringTableIndexPtr(1).stringData
+print("3")
 local i = 0
 local string_id = 1
 while true do

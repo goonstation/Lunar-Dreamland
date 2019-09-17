@@ -37,6 +37,8 @@ extern "C" {
 #define BYOND_FUNC __attribute__((visibility("default"))) const char*
 #endif
 
+
+#define fastcall __attribute__((regparm(3)))
 #include <cstdio>
 
 static int lj_hook_table;
@@ -102,14 +104,14 @@ static int lj_new_hook(lua_State * L) {
 static int lj_sigscan(lua_State * L) {
 	if (lua_isnumber(L, 1)) {
 		luaL_gsub(L, lua_tostring(L, 3), " ? ", " ?? ");
-		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tointeger(L, 1), lua_tointeger(L, 2), lua_tostring(L, -1), (short)luaL_optnumber(L, 4, 0)));
-		lua_pop(L, 1);
+		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tostring(L, 1), lua_tostring(L, 2)));
+		//lua_pop(L, 1);
 		return 1;
 	}
 	else {
 		luaL_gsub(L, lua_tostring(L, 2), " ? ", " ?? ");
-		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tostring(L, 1), lua_tostring(L, 2), (short)luaL_optnumber(L, 3, 0)));
-		lua_pop(L, 1);
+		lua_pushnumber(L, (lua_Number)(uintptr_t)Pocket::Sigscan::FindPattern(lua_tostring(L, 1), lua_tostring(L, 2)));
+		//lua_pop(L, 1);
 		return 1;
 	}
 }
@@ -151,6 +153,58 @@ static int lj_get_module(lua_State * L) {
 		lua_pushnil(L);
 	}
 	return 1;
+}
+
+typedef unsigned int(fastcall GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+GetStringTableIndex* gstiTrampoline;
+
+urmem::hook* gstiDetour;
+
+fastcall unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
+	printf("GetStringTableIndex(\"%s\", %i, %i);\n", string, handleEscapes, duplicateString);
+	return gstiDetour->call<urmem::calling_convention::thiscall, unsigned int>(string, handleEscapes, duplicateString);
+}
+
+typedef void(SetVariable)(int dType, int dId, unsigned int varName, int newType, float newVal);
+SetVariable* sv;
+urmem::hook* svDetour;
+
+void svHook(int dType, int dId, unsigned int varName, int newType, float newVal) {
+	printf("SetVariable(%i, %i, %i, %i, %f)\n", dType, dId, varName, newType, newVal);
+	svDetour->call(dType, dId, varName, newType, newVal);
+}
+
+GetStringTableIndex* getStringTableIndex;
+extern "C" BYOND_FUNC testing(int n, char** v) {
+	getStringTableIndex = (GetStringTableIndex*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 57 56 53 89 D3 83 EC ?? 85 C0");
+	if (!getStringTableIndex)
+	{
+		printf("ERROR: Failed to locate getStringTableIndex.\n");
+		return "ERROR: Failed to locate getStringTableIndex.";
+	}
+	gstiDetour = new urmem::hook(urmem::get_func_addr(getStringTableIndex), urmem::get_func_addr(gstiHook));
+	gstiDetour->enable();
+	/*
+	printf("a\n");
+	sv = (SetVariable*)Pocket::Sigscan::FindPattern("libbyond", "55 89 E5 ?? EC ?? ?? ?? ?? 89 75 ?? 8B 55 ?? 8B 75 ??");
+	if (!sv)
+	{
+		printf("ERROR: Failed to locate SetVariable.\n");
+		return "ERROR: Failed to locate SetVariable.";
+	}
+	printf("b\n");
+	svDetour = new urmem::hook(urmem::get_func_addr(sv), urmem::get_func_addr(&svHook));
+	printf("c\n");
+	if(!svDetour)
+	{
+		printf("ERROR: Failed to hook SetVariable.\n");
+		return "ERROR: Failed to hook SetVariable.";
+	}
+	printf("d\n");
+	svDetour->enable();
+	printf("e\n");
+	printf("%u\n", svDetour->is_enabled());*/
+	return "";
 }
 
 extern "C" BYOND_FUNC BHOOK_Init(int n, char** v) {

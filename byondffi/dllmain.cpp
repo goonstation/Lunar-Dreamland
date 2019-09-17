@@ -36,7 +36,7 @@ union heck
 typedef const char* (byond_ffi_func)(int, const char**);
 
 typedef void(SetVariable)(int datumType, int datumId, unsigned int varNameId, int vtype, heck newvalue);
-typedef unsigned int(GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+typedef int(__attribute__((regparm(3))) GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
 
 SetVariable* setVariable;
 GetStringTableIndex* getStringTableIndex;
@@ -70,8 +70,8 @@ const char* find_function_pointers()
 		printf("ERROR: Failed to locate getStringTableIndex.\n");
 		return "ERROR: Failed to locate getStringTableIndex.";
 	}
-	result_string_id = getStringTableIndex("result", 0, 0);
-	completed_string_id = getStringTableIndex("completed", 0, 0);
+	result_string_id = getStringTableIndex("result", 0, 1);
+	completed_string_id = getStringTableIndex("completed", 0, 1);
 	initialized = true;
 	printf("byondFFI initialized!\n");
 	return "";
@@ -86,9 +86,11 @@ void ffi_thread(byond_ffi_func* proc, int promise_id, int n_args, std::vector<st
 	}
 	const char* res = proc(n_args, a.data());
 	heck h;
-	h.i = getStringTableIndex(res, 0, 1);
+	h.i = getStringTableIndex(strdup(res), 0, 1);
+	printf("result_string_id: %i\n", result_string_id);
 	setVariable(0x21, promise_id, result_string_id, 0x06, h);
 	h.f = 1;
+	printf("completed_string_id: %i\n", completed_string_id);
 	setVariable(0x21, promise_id, completed_string_id, 0x2A, h);
 }
 

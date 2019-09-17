@@ -24,7 +24,7 @@ world/Topic(T)
 	var/list/arguments = args.Copy()
 	var/datum/promise/P = new
 	arguments.Insert(1, "\ref[P]")
-	call(BYONDFFI, "call_async")(arglist(arguments))
+	world << call(BYONDFFI, "call_async")(arglist(arguments))
 	return P
 
 /proc/call_wait()
@@ -271,7 +271,8 @@ var/init_res = ""
 	test = new
 	init_res += call(HOOKERINO,"BHOOK_Init")()
 	init_res += call(HOOKERINO, "BHOOK_RunLua")("dofile'boom.lua'")
-	init_res += call(BYONDFFI, "initialize")()
+	//call(HOOKERINO, "testing")()
+	//init_res += call(BYONDFFI, "initialize")()
 	//init_res += call("maptick.dll", "initialize")()
 
 /client/New()

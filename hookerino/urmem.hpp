@@ -26,7 +26,8 @@ public:
     enum class calling_convention {
         cdeclcall,
         stdcall,
-        thiscall
+        thiscall,
+        fastcall
     };
 
     template<calling_convention CConv = calling_convention::cdeclcall, typename Ret = void, typename ... Args>
