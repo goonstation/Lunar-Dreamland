@@ -43,11 +43,11 @@ for k, v in pairs {consts.MobType, consts.ObjType, consts.DatumType, consts.Clie
 end
 
 function M.toLua(value)
-	local t = M.luaHandlers[tonumber(value.type)]
+	local t = M.luaHandlers[tonumber(value.type) % 256]
 	if t then
 		return t(value)
 	else
-		print("??? value2lua type: " .. value)
+		print("??? value2lua type: " .. value.type)
 	end
 end
 --use refcount if we're assigning or invoking

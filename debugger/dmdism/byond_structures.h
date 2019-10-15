@@ -54,7 +54,7 @@ struct ProcConstants {
 	Value* args;
 };
 
-struct AnotherProcState {
+struct SuspendedProc {
 	char unknown[0x88];
 	int time_to_resume;
 };

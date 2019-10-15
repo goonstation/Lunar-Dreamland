@@ -8,13 +8,29 @@ world/Topic(T)
 /client/verb/export()
 	world.Export("byond://127.0.0.1:2789?whatever")
 
+var/next_promise_id = 0
 /datum/promise
 	var/completed = FALSE
 	var/result = ""
+	var/cb = null
+	var/__id = 0
+
+/datum/promise/New()
+	__id = next_promise_id++
+
+/datum/promise/proc/__internal_resolve(ref, id)
+	//This proc gets rewritten to contain a special opcode which suspends it for a few years, until it gets resumed by byondffi
+	world << "This shouldn't happen"
+	return 42 //some code to generate opcodes which will be replaced
+
+/datum/promise/proc/__resolve_callback()
+	__internal_resolve("\ref[src]", __id)
+	call(cb)(result)
 
 /datum/promise/proc/resolve()
-	while(!completed)
-		sleep(1)
+	world << "internal resolve \ref[src] [__id]"
+	__internal_resolve("\ref[src]", __id)
+	world << "internal resolve returned \ref[src] [__id]"
 	return result
 
 /proc/call_async()
@@ -24,13 +40,33 @@ world/Topic(T)
 	call("byondffi.dll", "call_async")(arglist(arguments))
 	return P
 
+/proc/call_async_callback()
+	var/list/arguments = args.Copy()
+	var/callback = arguments[3]
+	arguments.Cut(3, 4)
+	var/datum/promise/P = new
+	P.cb = callback
+	arguments.Insert(1, "\ref[P]")
+	call("byondffi.dll", "call_async")(arglist(arguments))
+	P.__resolve_callback()
+
 /proc/call_wait()
 	return call_async(arglist(args)).resolve()
+
+/proc/print_result(res)
+	world << "Result of async call: [res]"
+
+/client/verb/test_ffi_cb()
+	world << "Calling async with callback"
+	call_async_callback("slow.dll", "slow_concat", /proc/print_result, "Hello", ",", " world", "!")
 
 /client/verb/test_ffi()
 	var/datum/promise/P = call_async("slow.dll", "slow_concat", "Hello", ",", " world", "!")
 	world << "Now we wait..."
 	world << "Call returned: [P.resolve()]"
+
+/client/verb/do_input()
+	var/x = input("sefsdf") as text
 
 /client/verb/make_une_req()
 	make_req()
@@ -38,6 +74,9 @@ world/Topic(T)
 /proc/make_req()
 	var/list/http[] = world.Export("http://aa07.ml/test.php")
 	world.log << http["CONTENT"]
+
+/client/verb/hol_up()
+	world.status = "test"
 
 /client/verb/maptick_load()
 	maptick_initialize()
@@ -259,6 +298,9 @@ var/datum/access_test/test
 	sleep(10)
 	world << "That was a good sleep"
 
+/client/verb/list_set()
+	var/list/x = list(1)
+	x[1] = 5
 
 var/global/cats=1
 var/init_res = ""

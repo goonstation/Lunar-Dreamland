@@ -297,12 +297,28 @@ recipient.local_var_count = 16]]
 --recipient.bytecode_len = 67
 --recipient.local_var_count = 3]]
 
+p = proc.getProcSetupInfo("/datum/promise/proc/__internal_resolve")
+byond.new_bytecode2 = {0x1338, 0x00, 0x00, 0x00, 0x00}
+byond.cnew_bytecode2 = ffi.new("int[?]", #byond.new_bytecode2, byond.new_bytecode2)
+p.bytecode = byond.cnew_bytecode2
+print(byond.cnew_bytecode2)
+print(p.bytecode)
 
---[[ffi.cdef [[
+proc.getProc("/client/verb/test_ffi"):hook(
+	function(original, usr, src, args)
+		p = proc.getProcSetupInfo("/datum/promise/proc/__internal_resolve")
+		print(byond.cnew_bytecode2)
+		print(p.bytecode)
+		print(p.bytecode[0])
+		return original()
+	end
+)
+
+ffi.cdef [[
 	__declspec(dllexport) void __cdecl pass_shit(const char** proc_names, int* proc_ids, short* varcounts, short* bytecode_lens, int** bytecodes, ProcSetupEntry** setup_entries, int number_of_procs, ExecutionContext** execContext, GetStringTableIndexPtr woo, GetStringTableIndex wahoo, unsigned short* benis, unsigned short* benis2, ProcArrayEntry* killme);
 	__declspec(dllexport) void breakpoint_hit(int* bytecode, int offset);
 ]]
---[[
+
 local dmdis = ffi.load("dmdism")
 local proc_names = {}
 local proc_ids = {}
@@ -363,4 +379,3 @@ dmdis.pass_shit(
 	signatures.GetProcArrayEntry(0)
 )
 byond.set_breakpoint_func(debugger.debug_hook)
-]]
