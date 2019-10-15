@@ -58,20 +58,26 @@ typedef struct Type {
 
 typedef struct ExecutionContext ExecutionContext;
 
-typedef struct ProcState { //rename this
-	ExecutionContext* context;
-	int unknown1;
+typedef struct ProcConstants {
+	int proc_id;
+	int unknown2;
 	Value src;
 	Value usr;
-} ProcState;
+	ExecutionContext* context;
+	int unknown3;
+	int unknown4;
+	int unknown5;
+	int arg_count;
+	Value* args;
+} ProcConstants;
 
-typedef struct AnotherProcState {
+typedef struct SuspendedProc {
 	char unknown[0x88];
-	int time_to_resume;
-} AnotherProcState;
+	short time_to_resume;
+} SuspendedProc;
 
 typedef struct ExecutionContext {
-	ProcState* proc_state;
+	ProcConstants* constants;
 	ExecutionContext* parent_context;
 	int dbg_proc_file;
 	int dbg_current_line;

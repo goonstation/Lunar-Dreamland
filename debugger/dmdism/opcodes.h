@@ -15,6 +15,9 @@ enum Bytecode
 	TEST = 0x0D,
 	NOT = 0x0E,
 	JMP = 0x0F,
+
+	JNZ = 0x10,
+
 	JZ = 0x11,
 	RET = 0x12,
 
@@ -75,13 +78,20 @@ enum Bytecode
 	INC = 0x66,
 	DEC = 0x67,
 
+	POW = 0x6A,
 	LENGTH = 0x6D,
-
 	FINDTEXT = 0x6F,
+	SWITCH = 0x78,
+	SWITCH_RANGE = 0x7A,
+
 	LISTGET = 0x7B,
 	LISTSET = 0x7C,
 	ISTYPE = 0x7D,
+	BINARY_AND = 0x7E,
+	BINARY_OR = 0x7F,
+	BINARY_XOR = 0x80,
 
+	BITWISE_NOT = 0x81,
 	LSHIFT = 0x82,
 	RSHIFT = 0x83,
 
@@ -92,13 +102,17 @@ enum Bytecode
 	ISNUM = 0x9F,
 
 	ISINLIST = 0xA9,
+
+	LOGICAL_OR = 0xB2,
+	LOGICAL_AND = 0xB3,
+
 	CALLNAME = 0xB5,
 	PROMPTCHECK = 0xBA,
 	INPUT_ = 0xC1, //INPUT without underscore was already defined in some windows header
 	CRASH = 0xC7,
 	ICON_NEW = 0xDE,
 	JMP2 = 0xF8,
-	JNZ = 0xFA,
+	JNZ2 = 0xFA,
 	POPN = 0xFB,
 	CHECKNUM = 0xFC,
 	FOR_RANGE = 0xFD,
@@ -244,7 +258,7 @@ const std::unordered_map<Bytecode, std::string> mnemonics = {
 	{CRASH, "CRASH"},
 	{ICON_NEW, "ICON_NEW"},
 	{JMP2, "JMP"},
-	{JNZ, "JNZ"},
+	{JNZ2, "JNZ"},
 	{POPN, "POPN"},
 	{CHECKNUM, "CHECKNUM"},
 	{FOR_RANGE, "FOR_RANGE"},

@@ -11,29 +11,68 @@ world/Topic(T)
 /client/verb/export()
 	world.Export("byond://127.0.0.1:2789?whatever")
 
+var/next_promise_id = 0
 /datum/promise
 	var/completed = FALSE
 	var/result = ""
+	var/cb = null
+	var/__id = 0
+
+/datum/promise/New()
+	__id = next_promise_id++
+
+/datum/promise/proc/__internal_resolve(ref, id)
+	//This proc gets rewritten to contain a special opcode which suspends it for a few years, until it gets resumed by byondffi
+	world << "This shouldn't happen"
+	return 42 //some code to generate opcodes which will be replaced
+
+/datum/promise/proc/__resolve_callback()
+	__internal_resolve("\ref[src]", __id)
+	call(cb)(result)
 
 /datum/promise/proc/resolve()
-	while(!completed)
-		sleep(1)
+	world << "internal resolve \ref[src] [__id]"
+	__internal_resolve("\ref[src]", __id)
+	world << "internal resolve returned \ref[src] [__id]"
 	return result
 
 /proc/call_async()
 	var/list/arguments = args.Copy()
 	var/datum/promise/P = new
 	arguments.Insert(1, "\ref[P]")
-	world << call(BYONDFFI, "call_async")(arglist(arguments))
+	call(BYONDFFI, "call_async")(arglist(arguments))
 	return P
+
+/proc/call_async_callback()
+	var/list/arguments = args.Copy()
+	var/callback = arguments[3]
+	arguments.Cut(3, 4)
+	var/datum/promise/P = new
+	P.cb = callback
+	arguments.Insert(1, "\ref[P]")
+	call(BYONDFFI, "call_async")(arglist(arguments))
+	P.__resolve_callback()
+	world << "after callback resolve"
 
 /proc/call_wait()
 	return call_async(arglist(args)).resolve()
+
+/proc/print_result(res)
+	world << "Result of async call: [res]"
+
+/client/verb/test_ffi_cb()
+	world << "Calling async with callback"
+	spawn(0)
+		call_async_callback("slow.dll", "slow_concat", /proc/print_result, "Hello", ",", " world", "!")
+	world << "now we wait!"
 
 /client/verb/test_ffi()
 	var/datum/promise/P = call_async("slow.dll", "slow_concat", "Hello", ",", " world", "!")
 	world << "Now we wait..."
 	world << "Call returned: [P.resolve()]"
+
+/client/verb/do_input()
+	var/x = input("sefsdf") as text
 
 /client/verb/make_une_req()
 	make_req()
@@ -42,11 +81,14 @@ world/Topic(T)
 	var/list/http[] = world.Export("http://aa07.ml/test.php")
 	world.log << http["CONTENT"]
 
-///client/verb/maptick_load()
-//	maptick_initialize()
+/client/verb/hol_up()
+	world.status = "test"
 
-///client/verb/maptick_test()
-//	world << MAPTICK_LAST_INTERNAL_TICK_USAGE
+/client/verb/maptick_load()
+	maptick_initialize()
+
+/client/verb/maptick_test()
+	world << MAPTICK_LAST_INTERNAL_TICK_USAGE
 
 /client
 	var/list/listvar = list(1, "test")
@@ -248,7 +290,6 @@ var/datum/access_test/test
 /client/verb/context_test()
 	return ct()
 
-/*
 /client/verb/other_file_test()
 	return from_another_file(5, 6, 7)
 
@@ -257,12 +298,15 @@ var/datum/access_test/test
 	var/obj/type/testing/obj/otest/O2 = new
 	O2.name = "test"
 	world << O2.name
-	return from_another_file(5, 6, 7)*/
+	return from_another_file(5, 6, 7)
 
 /client/verb/sleep_test()
 	sleep(10)
 	world << "That was a good sleep"
 
+/client/verb/list_set()
+	var/list/x = list(1)
+	x[1] = 5
 
 var/global/cats=1
 var/init_res = ""
@@ -271,8 +315,7 @@ var/init_res = ""
 	test = new
 	init_res += call(HOOKERINO,"BHOOK_Init")()
 	init_res += call(HOOKERINO, "BHOOK_RunLua")("dofile'boom.lua'")
-	//call(HOOKERINO, "testing")()
-	//init_res += call(BYONDFFI, "initialize")()
+	call(BYONDFFI, "initialize")()
 	//init_res += call("maptick.dll", "initialize")()
 
 /client/New()

@@ -22,8 +22,10 @@ typedef unsigned int(*CreateList)(unsigned int reserveSize);
 typedef Value(*New)(Value* type, Value* args, unsigned int num_args, int unknown);
 typedef void(*TempBreakpoint)();
 typedef void(*CrashProc)(char* error, int argument);
-typedef AnotherProcState*(*ResumeIn)(ExecutionContext* ctx, float deciseconds);
+typedef SuspendedProc*(*ResumeIn)(ExecutionContext* ctx, float deciseconds);
 typedef void(*SendMapsPtr)(void);
+typedef SuspendedProc*(*ResumeIn2)(ExecutionContext* ctx, int unknown);
+typedef void(*StartTiming)(SuspendedProc*);
 
 bool QueryPerformanceFrequency(long long *lpFrequency);
 bool QueryPerformanceCounter(long long *lpPerformanceCount);

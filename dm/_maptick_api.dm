@@ -1,3 +1,4 @@
+#define MAPTICK (world.system_type == UNIX ? "maptick" : "maptick.dll")
 #define MAPTICK_LAST_INTERNAL_TICK_USAGE ((maptick.last_internal_tick_usage / world.tick_lag) * 100)
 
 var/datum/maptick_helper/maptick = new
@@ -13,11 +14,11 @@ var/datum/maptick_helper/maptick = new
 		world << "MAPTICK DATUM NOT FOUND"
 		world.log << "MAPTICK DATUM NOT FOUND"
 		return FALSE
-	if(!fexists("maptick.dll"))
+	if(!fexists(MAPTICK))
 		world << "MAPTICK DLL NOT FOUND"
 		world.log << "MAPTICK DLL NOT FOUND"
 		return FALSE
-	var/result = call("maptick.dll", "initialize")("\ref[maptick]")
+	var/result = call(MAPTICK, "initialize")("\ref[maptick]")
 	world << result
 	world.log << result
 	if(findtext(result, "MAPTICK ERROR"))
@@ -25,4 +26,4 @@ var/datum/maptick_helper/maptick = new
 	return TRUE
 
 /proc/maptick_shutdown()
-	call("maptick.dll", "cleanup")()
+	call(MAPTICK, "cleanup")()

@@ -65,6 +65,7 @@ M.crashHook =
 	M.hook(
 	signatures.CrashProc,
 	function(original, err, arg)
+		print("crashproc")
 		if arg == 0x1337 then
 			M.on_breakpoint(context.get_context())
 		elseif arg == 0x1338 then
