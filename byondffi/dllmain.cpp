@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <map>
 #include <iostream>
@@ -10,6 +11,8 @@
 #if defined(_MSC_VER)
 #include <windows.h>
 #define EXPORT __declspec(dllexport)
+#define strdup _strdup
+#define _CRT_SECURE_NO_WARNINGS
 #elif defined(__GNUC__)
 #define EXPORT __attribute__((visibility("default")))
 #include <dlfcn.h>
@@ -41,7 +44,7 @@ typedef unsigned int(GetStringTableIndex)(const char* string, int handleEscapes,
 #else
 typedef void(SetVariable)(int datumType, int datumId, unsigned int varNameId, int vtype, heck newvalue);
 typedef Value(GetVariable)(int datumType, int datumId, unsigned int varNameId);
-typedef unsigned int(__attribute__((regparm(3)) GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
+typedef unsigned int(__attribute__((regparm(3))) GetStringTableIndex)(const char* string, int handleEscapes, int duplicateString);
 #endif
 
 struct ExecutionContext
@@ -142,7 +145,8 @@ void ffi_thread(byond_ffi_func* proc, int promise_id, int n_args, std::vector<st
 		{
 			break;
 		}
-		Sleep(1);
+		std::chrono::milliseconds one_second(1000);
+		std::this_thread::sleep_for(one_second);
 		//TODO: some kind of conditional variable or WaitForObject?
 	}
 	suspended_procs[internal_id]->time_to_resume = 1;

@@ -1,14 +1,11 @@
 #define _CRT_SECURE_NO_WARNINGS
-#define protected public
-//#include <subhook.h>
 #include "urmem.hpp"
-#undef protected
 //AAAAAAAAAAAAAAAAA ^
 extern "C" {
 	#include <lua.h>
 	#include <lauxlib.h>
 	#include <lualib.h>
-	#include <luajit-2.1/luajit.h>
+	#include <luajit.h>
 }
 #include "sigscan.h"
 #include <cstring>
@@ -154,7 +151,7 @@ static int lj_get_module(lua_State * L) {
 }
 
 #ifdef _WIN32
-typedef unsigned int(__cdeclGetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
+typedef unsigned int(GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
 #else
 typedef unsigned int(__attribute__((regparm(3))) GetStringTableIndex)(char* string, int handleEscapes, int duplicateString);
 #endif
@@ -162,7 +159,11 @@ GetStringTableIndex* gstiTrampoline;
 
 urmem::hook* gstiDetour;
 
+#ifdef _WIN32
+unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
+#else
 __attribute__((regparm(3))) unsigned int gstiHook(char* string, int handleEscapes, int duplicateString) {
+#endif
 	printf("GetStringTableIndex(\"%s\", %i, %i);\n", string, handleEscapes, duplicateString);
 	return gstiDetour->call<urmem::calling_convention::cdeclcall, unsigned int>(string, handleEscapes, duplicateString);
 }

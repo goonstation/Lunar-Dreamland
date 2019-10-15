@@ -3,6 +3,7 @@
 #else
 #include <time.h>
 #endif
+#include <string>
 #include <chrono>
 #include <cstring>
 #include "urmem.hpp"
