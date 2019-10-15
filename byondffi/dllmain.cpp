@@ -81,9 +81,9 @@ const char* find_function_pointers()
 
 extern "C" __declspec(dllexport) void register_suspension(float promise_internal_id, SuspendedProc* suspended_proc)
 {
-	map_lock.lock();
+	//map_lock.lock();
 	suspended_procs[promise_internal_id] = suspended_proc;
-	map_lock.unlock();
+	//map_lock.unlock();
 }
 
 void ffi_thread(byond_ffi_func* proc, int promise_id, int n_args, std::vector<std::string> args)
@@ -94,7 +94,7 @@ void ffi_thread(byond_ffi_func* proc, int promise_id, int n_args, std::vector<st
 		a.push_back(args[i].c_str());
 	}
 	const char* res = proc(n_args, a.data());
-	map_lock.lock(); //just realized locking here prevents adding new stuff to the map, how does this even work?
+	//map_lock.lock(); //just realized locking here prevents adding new stuff to the map, how does this even work?
 	heck h;
 	h.i = getStringTableIndex(res, 0, 1);
 	setVariable(0x21, promise_id, result_string_id, 0x06, h);
@@ -112,7 +112,7 @@ void ffi_thread(byond_ffi_func* proc, int promise_id, int n_args, std::vector<st
 	}
 	suspended_procs[internal_id]->time_to_resume = 1;
 	suspended_procs.erase(internal_id);
-	map_lock.unlock();
+	//map_lock.unlock();
 }
 
 inline void do_it(byond_ffi_func* proc, std::string promise_datum_ref, int n_args, const char** args)
