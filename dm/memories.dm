@@ -48,7 +48,8 @@ var/next_promise_id = 0
 	P.cb = callback
 	arguments.Insert(1, "\ref[P]")
 	call("byondffi.dll", "call_async")(arglist(arguments))
-	P.__resolve_callback()
+	spawn(0)
+		P.__resolve_callback()
 
 /proc/call_wait()
 	return call_async(arglist(args)).resolve()
@@ -59,6 +60,7 @@ var/next_promise_id = 0
 /client/verb/test_ffi_cb()
 	world << "Calling async with callback"
 	call_async_callback("slow.dll", "slow_concat", /proc/print_result, "Hello", ",", " world", "!")
+	world << "Test"
 
 /client/verb/test_ffi()
 	var/datum/promise/P = call_async("slow.dll", "slow_concat", "Hello", ",", " world", "!")
