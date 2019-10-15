@@ -90,6 +90,7 @@ static int lj_new_hook(lua_State * L) {
 	void* orig = (void*)(uintptr_t)lua_tonumber(L, 1);
 	void* hook = (void*)(uintptr_t)lua_tonumber(L, 2);
 	urmem::hook* detour = (urmem::hook*)lua_newuserdata(L, sizeof(urmem::hook));
+	printf("hooking %p to %p\n", orig, hook);
 	detour->install(urmem::get_func_addr(orig), urmem::get_func_addr(hook));
 	luaL_setmetatable(L, "urmem::hook");
 	return 1;

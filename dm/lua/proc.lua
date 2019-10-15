@@ -124,11 +124,11 @@ function M.allProcs()
 	return typecache.procs
 end
 
+print(tostring(signatures.CallGlobalProc))
 M.callGlobalProcHook =
 	M.hook(
 	signatures.CallGlobalProc,
 	function(original, usrType, usrVal, flags, procid, d, srcType, srcVal, argv, argc, callback, callbackVar)
-		--print("this message means code is working")
 		--local theProc = signatures.GetProcArrayEntry(procid)
 		--if byond.toLuaString(theProc.procPath) == '/proc/conoutput' and argc == 1 then
 		--	print('dbg: ' ..byond.toLuaString(argv[0].value))
