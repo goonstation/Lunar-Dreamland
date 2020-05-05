@@ -1,4 +1,9 @@
 # Lunar Dreamland
+
+
+## Archived
+This repository is archived. You probably want the revised version of this project: https://github.com/MCHSL/extools
+
 #### What is this?
 Lunar Dreamland is a reverse engineering project and a Lua and C++ library for interfacing with BYOND's Dream Daemon server software. Currently it also includes a DM bytecode disassembler and debugger. It is a continuation of the old [Asyncmos](https://github.com/Byond-Hackermen/atmospheric) project.
 
